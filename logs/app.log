@@ -1,0 +1,47 @@
+2026-08-06 11:14:51 | INFO    | phase0 | Phase 0 import OK
+2026-08-06 11:18:29 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback analysis
+2026-08-06 11:18:29 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback script
+2026-08-06 11:20:51 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback analysis
+2026-08-06 11:20:51 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback script
+2026-08-06 11:20:51 | WARNING | ai.storyboard.generator | Ollama unavailable → fallback storyboard
+2026-08-06 11:23:01 | INFO    | tts.edge | TTS start | voice=vi-VN-HoaiMyNeural | chars=47 | out=tts_vi_VN_HoaiMyNeural.mp3
+2026-08-06 11:23:03 | INFO    | tts.edge | TTS done | duration=3.48s
+2026-08-06 11:23:04 | INFO    | video.engine | Progress 10% | Phân tích sản phẩm & viết script...
+2026-08-06 11:23:04 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback analysis
+2026-08-06 11:23:04 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback script
+2026-08-06 11:23:04 | INFO    | video.engine | Progress 30% | Tạo storyboard multi-scene...
+2026-08-06 11:23:04 | WARNING | ai.storyboard.generator | Ollama unavailable → fallback storyboard
+2026-08-06 11:23:04 | INFO    | video.engine | Progress 45% | Tạo voiceover tiếng Việt...
+2026-08-06 11:23:04 | INFO    | tts.edge | TTS start | voice=vi-VN-HoaiMyNeural | chars=219 | out=tts_vi_VN_HoaiMyNeural.mp3
+2026-08-06 11:23:10 | INFO    | tts.edge | TTS done | duration=17.06s
+2026-08-06 11:23:10 | INFO    | video.engine | Progress 60% | Dựng video multi-scene (Ken Burns)...
+2026-08-06 11:23:10 | INFO    | video.compositor | Compose start | scenes=4 | images=0 | audio=tts_vi_VN_HoaiMyNeural.mp3
+2026-08-06 11:23:14 | INFO    | video.compositor | Writing video → video_test01.mp4 (17.1s)
+2026-08-06 11:25:01 | INFO    | video.engine | Progress 10% | Phân tích sản phẩm & viết script...
+2026-08-06 11:25:01 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback analysis
+2026-08-06 11:25:01 | WARNING | ai.llm.analyzer | Ollama unavailable → using fallback script
+2026-08-06 11:25:01 | INFO    | video.engine | Progress 30% | Tạo storyboard multi-scene...
+2026-08-06 11:25:01 | WARNING | ai.storyboard.generator | Ollama unavailable → fallback storyboard
+2026-08-06 11:25:01 | INFO    | video.engine | Progress 45% | Tạo voiceover tiếng Việt...
+2026-08-06 11:25:01 | INFO    | tts.edge | TTS start | voice=vi-VN-HoaiMyNeural | chars=219 | out=tts_vi_VN_HoaiMyNeural.mp3
+2026-08-06 11:25:11 | INFO    | tts.edge | TTS done | duration=17.14s
+2026-08-06 11:25:11 | INFO    | video.engine | Progress 60% | Dựng video multi-scene (Ken Burns)...
+2026-08-06 11:25:11 | INFO    | video.compositor | Compose start | scenes=4 | images=0 | audio=tts_vi_VN_HoaiMyNeural.mp3
+2026-08-06 11:25:11 | INFO    | video.compositor | Writing video → video_test01.mp4 (17.1s)
+2026-08-06 11:26:45 | INFO    | video.compositor | Compose done | video_test01.mp4 | size=0.5 MB
+2026-08-06 11:26:45 | INFO    | video.engine | Progress 100% | Hoàn tất
+2026-08-06 11:28:29 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/agent-harnesses "HTTP/1.1 200 OK"
+2026-08-06 11:28:29 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-08-06 11:28:29 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-08-06 11:28:45 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-08-06 11:28:46 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-08-06 11:29:08 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-08-06 11:29:08 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-08-06 11:35:44 | INFO    | services.product.batch | Loaded 2 products from sample_batch.xlsx
+2026-08-06 11:35:48 | INFO    | services.history | History saved | job=hist01 | status=done
+2026-08-06 11:36:45 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/agent-harnesses "HTTP/1.1 200 OK"
+2026-08-06 11:36:45 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-08-06 11:36:45 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-08-06 11:36:46 | INFO    | services.product.batch | Loaded 2 products from sample_batch.xlsx
+2026-08-06 11:41:36 | WARNING | video.subtitle | ASR unavailable (faster-whisper chưa cài. pip install faster-whisper) → script-based subtitles
+2026-08-06 11:41:36 | INFO    | video.subtitle | Subtitles via script split: 3 segments

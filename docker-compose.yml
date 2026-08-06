@@ -1,0 +1,54 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./cache:/app/cache
+      - ./assets:/app/assets
+      - ./workflows:/app/workflows
+      - ./.env:/app/.env:ro
+    environment:
+      - AVA_RENDER_MODE=cpu
+      - AVA_COMFYUI_ENABLED=false
+      - AVA_OLLAMA_BASE_URL=http://ollama:11434
+      - AVA_LOG_LEVEL=INFO
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  # Optional local LLM – pull model: docker compose exec ollama ollama pull qwen2.5:7b
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    # Uncomment if you have NVIDIA GPU for Ollama:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Optional ComfyUI – user must provide their own image / mount
+  # comfyui:
+  #   image: yanwk/comfyui-boot:latest
+  #   ports:
+  #     - "8188:8188"
+  #   volumes:
+  #     - comfyui_data:/root
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
+volumes:
+  ollama_data:
