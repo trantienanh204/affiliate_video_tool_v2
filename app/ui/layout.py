@@ -14,12 +14,24 @@ CATEGORIES = [
 
 
 def build_header() -> None:
-    gr.Markdown(
-        """
-# 🎬 Affiliate Video AI
-**Multi-scene · AI Script · Voice Việt · 9:16 · Free / Local**
+    from core.config import settings
 
-Upload ảnh sản phẩm (nên có người) → AI tự viết script, storyboard, voiceover và dựng video.
+    gpu_on = settings.comfyui_enabled or settings.render_mode.value == "gpu"
+    mode_line = (
+        "🟢 **Mode: AI Video (ComfyUI I2V)** — video chuyển động thật"
+        if gpu_on
+        else "🟡 **Mode free CPU** — đa cảnh từ nhiều ảnh + AI script + voice (không phải neural I2V)"
+    )
+    gr.Markdown(
+        f"""
+# 🎬 Affiliate Video AI
+**AI Script · Storyboard · Voice Việt · 9:16 · 100% Free / Local**
+
+{mode_line}
+
+**Máy không GPU — cách dùng tốt nhất:** upload **3–5 ảnh** cùng SP (góc khác nhau).  
+AI chia nhiều cảnh + motion khác nhau + voice + caption.  
+Neural video (Wan/Kling) cần GPU NVIDIA — không có thì không chạy free local được.
         """
     )
 
@@ -46,10 +58,14 @@ def build_single_tab():
                 max_lines=1,
             )
             images = gr.File(
-                label="Ảnh sản phẩm (1 hoặc nhiều)",
+                label="Ảnh sản phẩm — NÊN 3–5 ảnh (góc khác nhau)",
                 file_count="multiple",
                 file_types=["image"],
                 type="filepath",
+            )
+            gr.Markdown(
+                "*Mỗi ảnh = 1 góc/cảnh. Nhiều ảnh → video đa cảnh rõ hơn. "
+                "1 ảnh hoặc 0 ảnh → chất lượng kém hơn nhiều.*"
             )
             duration = gr.Slider(
                 minimum=settings.min_duration,

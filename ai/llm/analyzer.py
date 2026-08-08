@@ -51,12 +51,50 @@ _FALLBACK_HOOKS = {
     "Khác": ["Sản phẩm này đáng tiền thật sự!", "Dùng một lần là thích luôn!", "Hot item đang bán chạy, nhanh tay nha!"],
 }
 
-_FALLBACK_CTA = [
-    "Bấm giỏ hàng góc trái để xem giá và mua ngay nha!",
-    "Muốn sở hữu thì bấm giỏ hàng liền tay nha!",
-    "Đói bụng / cần gấp thì bấm giỏ hàng đặt ngay nha!",
-    "Bấm giỏ hàng để check size và đặt hàng nha!",
-]
+# CTA theo category — không dùng chung (tránh "đói bụng" cho áo)
+_FALLBACK_CTA: dict[str, list[str]] = {
+    "Áo": [
+        "Bấm giỏ hàng góc trái để xem giá và mua ngay nha!",
+        "Muốn mặc đẹp thì bấm giỏ hàng liền tay nha!",
+        "Check size và đặt hàng ở giỏ góc trái nha!",
+    ],
+    "Quần": [
+        "Bấm giỏ hàng để chọn size và mua ngay nha!",
+        "Muốn sở hữu thì bấm giỏ hàng liền tay nha!",
+    ],
+    "Giày": [
+        "Bấm giỏ hàng góc trái để check size và đặt hàng nha!",
+        "Muốn đi êm thì bấm giỏ hàng đặt ngay nha!",
+    ],
+    "Đồ ăn": [
+        "Đói bụng thì bấm giỏ hàng đặt ngay nha!",
+        "Ship tận nơi — bấm giỏ hàng góc trái nha!",
+    ],
+    "Phụ kiện": [
+        "Bấm giỏ hàng để sở hữu ngay nha!",
+        "Rẻ mà xinh — bấm giỏ hàng liền tay nha!",
+    ],
+    "Mỹ phẩm": [
+        "Bấm giỏ hàng để trải nghiệm ngay nha!",
+        "Muốn da đẹp thì đặt ở giỏ hàng góc trái nha!",
+    ],
+    "Đồng hồ": [
+        "Bấm giỏ hàng để sở hữu ngay nha!",
+        "Sang mà giá tốt — đặt ở giỏ hàng liền nha!",
+    ],
+    "Túi": [
+        "Bấm giỏ hàng góc trái để mua ngay nha!",
+        "Muốn xách đẹp thì đặt hàng liền tay nha!",
+    ],
+    "Nhà cửa": [
+        "Bấm giỏ hàng để order về nhà ngay nha!",
+        "Tiện mà xinh — đặt ở giỏ hàng góc trái nha!",
+    ],
+    "Khác": [
+        "Bấm giỏ hàng góc trái để xem giá và mua ngay nha!",
+        "Muốn sở hữu thì bấm giỏ hàng liền tay nha!",
+    ],
+}
 
 _CONCEPT_BY_CATEGORY = {
     "Áo": ["Lifestyle", "Street", "Cafe", "Office"],
@@ -96,7 +134,8 @@ def _fallback_script(product: ProductInput, analysis: ProductAnalysis) -> Script
     hook = random.choice(_FALLBACK_HOOKS[cat])
     body = product.description.strip() or random.choice(analysis.usp)
     extra = analysis.usp[1] if len(analysis.usp) > 1 else analysis.usp[0]
-    cta = random.choice(_FALLBACK_CTA)
+    cta_pool = _FALLBACK_CTA.get(cat) or _FALLBACK_CTA["Khác"]
+    cta = random.choice(cta_pool)
     full = (
         f"{hook} "
         f"Đây là {product.name}. "

@@ -81,19 +81,18 @@ def _scene_clip(
         idx = scene.image_index % len(image_paths)
         img = image_paths[idx]
 
-    # Vary zoom / pan by role
-    if scene.role in ("hook", "closeup", "detail"):
-        z0, z1 = 1.0, 1.12
-        pan_x, pan_y = 0.0, -0.35
-    elif scene.role == "lifestyle":
-        z0, z1 = 1.06, 1.0
-        pan_x, pan_y = 0.45, 0.0
-    elif scene.role == "cta":
-        z0, z1 = 1.0, 1.10
-        pan_x, pan_y = 0.0, 0.25
-    else:
-        z0, z1 = 1.0, 1.09
-        pan_x, pan_y = -0.25, 0.1
+    # Stronger, distinct motion per role so multi-image feels like different shots
+    # (This is still photo-motion, NOT neural I2V — best free option without GPU)
+    motion = {
+        "hook":        (1.0, 1.18, 0.15, -0.55),   # punch-in + slight up
+        "closeup":     (1.08, 1.22, -0.35, -0.25), # tight crop, drift left
+        "detail":      (1.12, 1.28, 0.45, 0.20),   # extreme zoom on detail
+        "showcase":    (1.0, 1.14, -0.50, 0.10),   # wide pan across product
+        "lifestyle":   (1.15, 1.0, 0.55, -0.15),   # zoom-out reveal
+        "social_proof":(1.02, 1.12, 0.0, 0.40),    # slow rise
+        "cta":         (1.0, 1.16, 0.0, 0.30),     # settle on CTA
+    }
+    z0, z1, pan_x, pan_y = motion.get(scene.role, (1.0, 1.12, -0.2, 0.1))
 
     base = make_kenburns_clip(
         img,

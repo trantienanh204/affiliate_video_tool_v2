@@ -49,10 +49,10 @@ class Settings(BaseSettings):
     render_mode: RenderMode = RenderMode.CPU
     video_width: int = 1080
     video_height: int = 1920
-    video_fps: int = 24
-    video_bitrate: str = "2500k"
-    default_duration: int = 35  # seconds
-    min_duration: int = 20
+    video_fps: int = 16  # CPU: 16fps nhanh hơn 24 rất nhiều, vẫn ổn TikTok
+    video_bitrate: str = "2000k"
+    default_duration: int = 30
+    min_duration: int = 15
     max_duration: int = 60
 
     # --- LLM (Ollama) ---
@@ -74,13 +74,15 @@ class Settings(BaseSettings):
     comfyui_enabled: bool = False
 
     # --- Subtitle ---
-    whisper_model: str = "base"  # tiny / base / small / medium
+    # Default OFF on CPU: burn-in re-encodes toàn bộ video → +60–90s
+    whisper_model: str = "base"
     whisper_device: Literal["cpu", "cuda"] = "cpu"
-    burn_subtitles: bool = True
+    burn_subtitles: bool = False
 
     # --- Music ---
-    enable_bgm: bool = True
-    bgm_volume: float = 0.18  # relative to voice
+    # Default OFF: không có file nhạc + tránh encode lần 2
+    enable_bgm: bool = False
+    bgm_volume: float = 0.18
 
     # --- Gradio ---
     gradio_server_name: str = "0.0.0.0"

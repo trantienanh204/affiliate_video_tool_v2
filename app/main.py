@@ -98,18 +98,28 @@ def process_single(
         }
         save_result(result)
 
+        mode = result.meta.get("render_mode", "cpu")
         tip = ""
-        if not image_paths:
+        if mode == "cpu":
             tip = (
-                "\n\n⚠️ **Chưa có ảnh** → video dùng nền tối + text. "
-                "Upload ảnh **có người mặc/cầm sản phẩm** sẽ đẹp hơn rất nhiều."
+                "\n\n⚠️ **Đây là bản Preview (CPU)** — chưa phải video AI chuyển động thật.\n"
+                "Muốn **AI Image-to-Video** (Wan / LTX): cần GPU + ComfyUI.\n"
+                "→ Xem hướng dẫn: `docs/AI_VIDEO_SETUP.md`"
             )
+            if not image_paths:
+                tip += (
+                    "\n\n⚠️ Chưa upload ảnh. I2V **bắt buộc** có ảnh sản phẩm "
+                    "(nên ảnh có người mặc/cầm SP)."
+                )
+        elif not image_paths:
+            tip = "\n\n⚠️ GPU mode nhưng không có ảnh — đã fallback. Upload ảnh để I2V."
 
-        info = f"""✅ **Video sẵn sàng** (CPU multi-scene)
+        info = f"""✅ **Video sẵn sàng** ({'AI I2V / GPU' if mode == 'gpu' else 'Preview CPU'})
 
 **Concept:** {result.meta.get('concept', '—')}  
 **Scenes:** {result.meta.get('scenes', '—')}  
 **Duration:** {result.duration:.1f}s  
+**Render:** `{mode}`
 
 **Cách đăng Affiliate:**
 1. Tải video → TikTok → Upload  
@@ -267,8 +277,15 @@ def main() -> None:
         share=settings.gradio_share,
         theme=theme,
         css="""
-        .gradio-container { max-width: 1200px !important; }
+        .gradio-container {
+            max-width: 1100px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+        }
         footer { display: none !important; }
+        .main, .wrap { justify-content: center !important; }
         """,
     )
 
