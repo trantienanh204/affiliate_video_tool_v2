@@ -20,6 +20,7 @@ class ProductInput(BaseModel):
         description="Đối tượng khách hàng (vd: nữ 18-25, dân văn phòng)",
     )
     image_paths: list[Path] = Field(default_factory=list, description="Đường dẫn ảnh sản phẩm")
+    image_description: str = Field(default="", max_length=2000, description="Mô tả đặc điểm nhìn thấy trong ảnh")
     duration: int = Field(default=35, ge=15, le=90, description="Độ dài video mục tiêu (giây)")
     voice: str = Field(default="vi-VN-HoaiMyNeural", description="Voice ID edge-tts")
     render_mode: str = Field(default="cpu", description="cpu | gpu")

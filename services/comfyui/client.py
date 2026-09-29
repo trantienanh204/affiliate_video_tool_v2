@@ -30,13 +30,18 @@ class ComfyUIClient:
         self.timeout = timeout or settings.comfyui_timeout
         self.client_id = uuid.uuid4().hex
         self._http = httpx.Client(base_url=self.base_url, timeout=30.0)
+        self._available: bool | None = None
 
     def is_available(self) -> bool:
+        if self._available is not None:
+            return self._available
         try:
             r = self._http.get("/system_stats", timeout=5.0)
-            return r.status_code == 200
+            self._available = r.status_code == 200
+            return self._available
         except Exception as e:
             logger.debug("ComfyUI health check failed: %s", e)
+            self._available = False
             return False
 
     def upload_image(self, image_path: Path, overwrite: bool = True) -> str:

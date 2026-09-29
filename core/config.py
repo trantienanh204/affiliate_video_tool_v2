@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     workflows_dir: Path = Field(default=Path("workflows"))
 
     # --- Render ---
-    render_mode: RenderMode = RenderMode.CPU
+    render_mode: RenderMode = RenderMode.GPU
     video_width: int = 1080
     video_height: int = 1920
     video_fps: int = 16  # CPU: 16fps nhanh hơn 24 rất nhiều, vẫn ổn TikTok
@@ -71,7 +71,20 @@ class Settings(BaseSettings):
     # --- ComfyUI (GPU mode) ---
     comfyui_url: str = "http://127.0.0.1:8188"
     comfyui_timeout: int = 600
-    comfyui_enabled: bool = False
+    comfyui_enabled: bool = True
+    require_ai_video: bool = True
+    video_provider: Literal["hf_zerogpu", "fal", "comfyui", "cpu"] = "hf_zerogpu"
+    video_provider_fallbacks: str = "fal,comfyui"
+    hf_video_space: str = "zerogpu-aoti/wan2-2-fp8da-aoti-faster"
+    hf_video_duration: float = 2.5
+    hf_character_space: str = "hugging-apps/qwen-image-2-1"
+    hf_character_steps: int = 10
+    hf_character_enabled: bool = True
+    fal_model: str = "fal-ai/wan/v2.7/image-to-video"
+    fal_video_duration: int = 5
+    fal_resolution: Literal["720p", "1080p"] = "720p"
+    i2v_max_scenes: int = 1
+    i2v_scene_duration: float = 3.0
 
     # --- Subtitle ---
     # Default OFF on CPU: burn-in re-encodes toàn bộ video → +60–90s

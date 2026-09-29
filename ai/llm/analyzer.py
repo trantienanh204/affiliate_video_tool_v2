@@ -26,16 +26,11 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 _FALLBACK_USP = {
-    "Áo": ["Form chuẩn, tôn dáng", "Chất vải mềm thoáng", "Giá hạt dẻ, dễ phối"],
-    "Quần": ["Phom tôn chân", "Co giãn, không nhăn", "Nhiều size"],
-    "Giày": ["Êm chân cả ngày", "Đế chống trượt", "Thiết kế trendy"],
-    "Đồ ăn": ["Nguyên liệu tươi", "Vị đậm đà", "Giao nhanh còn nóng"],
-    "Phụ kiện": ["Nâng tầm outfit", "Bền, không dị ứng", "Giá siêu mềm"],
-    "Mỹ phẩm": ["Lành tính", "Hiệu quả rõ", "Phù hợp da Việt"],
-    "Đồng hồ": ["Sang trọng", "Pin lâu", "Chống nước"],
-    "Túi": ["Sức chứa lớn", "Chất liệu bền", "Thiết kế thời trang"],
-    "Nhà cửa": ["Tiện lợi", "Bền đẹp", "Giá hợp lý"],
-    "Khác": ["Chất lượng tốt", "Giá hợp lý", "Nhiều người review 5 sao"],
+    "Áo": ["Thiết kế dễ phối đồ"], "Quần": ["Kiểu dáng dễ phối đồ"],
+    "Giày": ["Thiết kế phù hợp nhiều phong cách"], "Đồ ăn": ["Sản phẩm tiện chọn mua"],
+    "Phụ kiện": ["Thiết kế tạo điểm nhấn"], "Mỹ phẩm": ["Bao bì và sản phẩm như hình"],
+    "Đồng hồ": ["Thiết kế phù hợp nhiều phong cách"], "Túi": ["Kiểu dáng tiện phối đồ"],
+    "Nhà cửa": ["Thiết kế hướng đến sự tiện dụng"], "Khác": ["Cùng xem chi tiết sản phẩm"],
 }
 
 _FALLBACK_HOOKS = {
@@ -115,6 +110,8 @@ def _fallback_analysis(product: ProductInput) -> ProductAnalysis:
     usp = list(_FALLBACK_USP[cat])
     if product.description:
         usp.insert(0, product.description.strip()[:80])
+    elif product.image_description:
+        usp.insert(0, product.image_description.strip()[:100])
     concept = random.choice(_CONCEPT_BY_CATEGORY.get(cat, _CONCEPT_BY_CATEGORY["Khác"]))
     target = product.target_audience or "Người dùng TikTok quan tâm mua sắm online"
     return ProductAnalysis(
@@ -131,19 +128,56 @@ def _fallback_analysis(product: ProductInput) -> ProductAnalysis:
 
 def _fallback_script(product: ProductInput, analysis: ProductAnalysis) -> ScriptPackage:
     cat = product.category if product.category in _FALLBACK_HOOKS else "Khác"
-    hook = random.choice(_FALLBACK_HOOKS[cat])
-    body = product.description.strip() or random.choice(analysis.usp)
-    extra = analysis.usp[1] if len(analysis.usp) > 1 else analysis.usp[0]
+    # Conversational openings, without unverified superlatives or fake claims.
+    hook_pool = {
+        "Áo": [
+            "Một chiếc áo basic, nhưng nhìn kỹ có vài điểm khá hay.",
+            "Nếu bạn thích mặc đơn giản, thử ngó qua mẫu áo này nhé.",
+            "Đang tìm một chiếc áo dễ mặc mỗi ngày? Xem mẫu này nha.",
+            "Mẫu áo này hợp với những hôm muốn chọn đồ thật nhanh.",
+        ],
+        "Quần": [
+            "Thử xem chiếc quần này có hợp với tủ đồ của bạn không nhé.",
+            "Một mẫu quần nhìn gọn gàng, mình cùng xem chi tiết nha.",
+            "Nếu đang tìm quần mới, bạn có thể tham khảo mẫu này.",
+        ],
+        "Giày": [
+            "Mình cùng xem kỹ đôi giày này trước khi chọn nhé.",
+            "Đang tìm một đôi giày mới? Đây là mẫu bạn có thể tham khảo.",
+        ],
+        "Khác": [
+            "Mình vừa thấy món này, cùng xem thử có gì đáng chú ý nhé.",
+            "Nếu bạn đang cân nhắc món này, xem nhanh vài thông tin nha.",
+        ],
+    }
+    hook = random.choice(hook_pool.get(cat, hook_pool["Khác"]))
+    # Treat free-form description/target as fallible. Without an LLM there is
+    # no safe way to reconcile contradictions, so only use concise visual facts.
+    visual = (product.image_description or "").strip()
+    safe_visual = visual[:180].rstrip(" .")
+    if safe_visual:
+        body = f"Trong ảnh, mình thấy {safe_visual[0].lower() + safe_visual[1:]}."
+    elif cat in ("Áo", "Quần", "Giày", "Túi", "Phụ kiện"):
+        body = "Nếu đang cân nhắc mẫu này, mình có thể xem kỹ kiểu dáng, chi tiết và thông tin size trước khi chọn."
+    else:
+        body = "Mình cùng xem qua sản phẩm và những thông tin cần thiết trước khi chọn nhé."
+    price = ""
+    if product.price:
+        raw_price = product.price.strip()
+        digits = "".join(ch for ch in raw_price if ch.isdigit())
+        if digits and len(digits) >= 4 and not any(ch in raw_price.lower() for ch in "kđđồng"):
+            try:
+                raw_price = f"{int(digits):,}".replace(",", ".") + " đồng"
+            except ValueError:
+                pass
+        price = f"Mức giá tham khảo là {raw_price}. "
     cta_pool = _FALLBACK_CTA.get(cat) or _FALLBACK_CTA["Khác"]
-    cta = random.choice(cta_pool)
-    full = (
-        f"{hook} "
-        f"Đây là {product.name}. "
-        f"{body} "
-        f"{extra} "
-        f"Nhiều bạn feedback rất tốt, chất lượng ổn trong tầm giá. "
-        f"{cta}"
+    cta = (
+        "Bạn xem bảng size và thông tin sản phẩm ở giỏ hàng trước khi chọn nha!"
+        if cat in ("Áo", "Quần", "Giày")
+        else random.choice(cta_pool)
     )
+    full = f"{hook} Đây là {product.name}. {body} {price}{cta}"
     hashtags = [
         "#TikTokShop",
         "#Affiliate",
@@ -193,10 +227,18 @@ def analyze_product(
         logger.warning("Ollama unavailable → using fallback analysis")
         return _fallback_analysis(product)
 
+    if product.image_paths and not product.image_description:
+        product.image_description = use_client.describe_product_images(
+            product.image_paths, product_name=product.name, category=product.category
+        )
+
     user_prompt = ANALYSIS_USER.format(
         name=product.name,
         category=product.category,
-        description=product.description or "(không có)",
+        description="\n".join(filter(None, [
+            product.description or "",
+            "Đặc điểm nhìn thấy trong ảnh: " + product.image_description if product.image_description else "",
+        ])) or "(không có)",
         price=product.price or "(chưa rõ)",
         target_audience=product.target_audience or "(tự suy luận)",
     )
@@ -235,7 +277,7 @@ def generate_script(
     user_prompt = SCRIPT_USER.format(
         name=product.name,
         category=product.category,
-        usp=", ".join(analysis.usp) or product.description,
+        usp=", ".join(analysis.usp) or product.description or product.image_description,
         concept=analysis.concept,
         target_audience=analysis.target_audience,
         price=product.price or "",

@@ -10,8 +10,19 @@ services:
       - ./workflows:/app/workflows
       - ./.env:/app/.env:ro
     environment:
-      - AVA_RENDER_MODE=cpu
-      - AVA_COMFYUI_ENABLED=false
+      - AVA_RENDER_MODE=${AVA_RENDER_MODE:-gpu}
+      - AVA_COMFYUI_ENABLED=${AVA_COMFYUI_ENABLED:-true}
+      - AVA_REQUIRE_AI_VIDEO=${AVA_REQUIRE_AI_VIDEO:-true}
+      - AVA_I2V_MAX_SCENES=${AVA_I2V_MAX_SCENES:-1}
+      - AVA_I2V_SCENE_DURATION=${AVA_I2V_SCENE_DURATION:-3}
+      - AVA_COMFYUI_URL=${AVA_COMFYUI_URL:-http://host.docker.internal:8188}
+      - AVA_VIDEO_PROVIDER=${AVA_VIDEO_PROVIDER:-hf_zerogpu}
+      - AVA_VIDEO_PROVIDER_FALLBACKS=${AVA_VIDEO_PROVIDER_FALLBACKS:-fal,comfyui}
+      - AVA_HF_CHARACTER_ENABLED=${AVA_HF_CHARACTER_ENABLED:-true}
+      - AVA_HF_CHARACTER_SPACE=${AVA_HF_CHARACTER_SPACE:-hugging-apps/qwen-image-2-1}
+      - AVA_HF_CHARACTER_STEPS=${AVA_HF_CHARACTER_STEPS:-10}
+      - FAL_KEY=${FAL_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
       - AVA_OLLAMA_BASE_URL=http://ollama:11434
       - AVA_LOG_LEVEL=INFO
     depends_on:

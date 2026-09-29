@@ -8,6 +8,8 @@ otherwise falls back to raw httpx calls against the Ollama HTTP API.
 from __future__ import annotations
 
 import json
+import base64
+from pathlib import Path
 from typing import Any, Optional
 
 import httpx
@@ -135,6 +137,39 @@ class OllamaClient:
         except json.JSONDecodeError as e:
             logger.warning("JSON parse failed, raw=%s", raw[:300])
             raise LLMError("Model returned invalid JSON", details=str(e)) from e
+
+    def describe_product_images(self, image_paths: list[Path], *, product_name: str = "", category: str = "") -> str:
+        """Use an Ollama vision model to describe visible product attributes."""
+        encoded_images = []
+        for path in image_paths[:4]:
+            try:
+                data = base64.b64encode(Path(path).read_bytes()).decode("ascii")
+                encoded_images.append(data)
+            except OSError as e:
+                logger.warning("Cannot read product image %s: %s", path, e)
+        if not encoded_images:
+            return ""
+
+        prompt = (
+            "Mô tả ngắn gọn những gì NHÌN THẤY trực tiếp trong ảnh sản phẩm để viết video giới thiệu. "
+            "Ưu tiên loại sản phẩm, màu sắc, họa tiết, phom dáng, chi tiết thiết kế và cách phối/mặc nếu thấy. "
+            "Không suy đoán chất liệu, giá, độ bền, công dụng, thương hiệu hay đánh giá nếu ảnh không chứng minh. "
+            "Nếu không nhận diện rõ, hãy nói chưa xác định được. Trả lời tiếng Việt trong 2-4 câu. "
+            f"Tên người dùng nhập: {product_name}. Danh mục: {category}."
+        )
+        try:
+            r = self._client.post("/api/chat", json={
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt, "images": encoded_images}],
+                "stream": False,
+                "options": {"temperature": 0.1, "num_predict": 220},
+            })
+            r.raise_for_status()
+            description = (r.json().get("message", {}).get("content") or "").strip()
+            return description[:1000]
+        except Exception as e:
+            logger.warning("Ollama vision analysis unavailable: %s", e)
+            return ""
 
     def close(self) -> None:
         self._client.close()

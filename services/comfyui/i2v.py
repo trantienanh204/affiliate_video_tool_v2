@@ -159,6 +159,11 @@ def render_scene_i2v(
             f"Workflow '{workflow_name}' chưa được cấu hình. "
             f"Export API workflow từ ComfyUI vào workflows/{workflow_name}.json"
         )
+    if not any(isinstance(node, dict) and node.get("class_type") in ("LoadImage", "LoadImageMask") for node in template.values()):
+        raise ComfyUIError(
+            f"Workflow '{workflow_name}' không có node LoadImage tiêu chuẩn; "
+            "không thể đảm bảo ảnh sản phẩm là nguồn của video."
+        )
 
     workflow = _inject_inputs(
         template,

@@ -1,6 +1,6 @@
 # Affiliate Video AI
 
-Hệ thống AI tạo video Affiliate TikTok **multi-scene**, ưu tiên **miễn phí / local / open-source**.
+Hệ thống tạo video Affiliate TikTok từ ảnh sản phẩm, script tiếng Việt và voiceover.
 
 Một cú click: tên sản phẩm + ảnh → script + voiceover tiếng Việt + storyboard + video 9:16.
 
@@ -14,14 +14,16 @@ Một cú click: tên sản phẩm + ảnh → script + voiceover tiếng Việt
 | **Storyboard** | 4–6 scene, location / camera / lighting / color riêng |
 | **TTS** | edge-tts giọng Việt neural (Hoài My, Hương Hạnh, Nam Minh) |
 | **Video CPU** | Multi-scene Ken Burns + text overlay + transition |
-| **Video GPU** | ComfyUI Image-to-Video (LTX / Wan / CogVideoX) – optional |
+| **Video AI cloud miễn phí** | Hugging Face ZeroGPU Space (Wan 2.2) – quota hằng ngày, có hàng đợi |
+| **Video local** | ComfyUI Image-to-Video – cần GPU NVIDIA phù hợp |
 | **Subtitle** | faster-whisper hoặc split script → burn-in |
 | **BGM** | Mix nhạc royalty-free từ `assets/music/` |
 | **Batch** | Import Excel/CSV → render hàng loạt |
+| **Truyện ngắn** | Viết truyện hư cấu dạng voiceover, tạo audio tiếng Việt và tải kịch bản |
 | **History** | SQLite job log |
 | **UI** | Gradio dark mode, progress, queue, tabs |
 
-**Không phụ thuộc:** OpenAI, Gemini, Claude, ElevenLabs, Runway, Pika, Kling, fal.ai.
+Backend mặc định là Hugging Face ZeroGPU để chạy được trên máy không có GPU rời. Ảnh được gửi lên Space; quota miễn phí có giới hạn và dịch vụ có thể bận. fal.ai là lựa chọn trả phí; ComfyUI local cần GPU NVIDIA phù hợp.
 
 ---
 
@@ -43,9 +45,8 @@ cd affiliate-video-ai
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Config
-cp .env.example .env
-# chỉnh AVA_* nếu cần
+# Khai báo API key nếu dùng AI video cloud (PowerShell)
+$env:FAL_KEY = "YOUR_FAL_API_KEY"
 
 # Chạy
 python run.py
@@ -62,6 +63,10 @@ docker compose up -d --build
 
 # Pull LLM (một lần)
 docker compose exec ollama ollama pull qwen2.5:7b
+
+# Trước khi khởi chạy Compose, khai báo FAL_KEY trong PowerShell
+$env:FAL_KEY = "YOUR_FAL_API_KEY"
+docker compose up -d --build app
 ```
 
 ---
@@ -82,7 +87,20 @@ docker compose exec ollama ollama pull qwen2.5:7b
 3. `image_path` có thể nhiều ảnh, cách nhau bởi `;`.
 4. Upload file → **Chạy batch**.
 
-### GPU / ComfyUI
+### Truyện ngắn TikTok / YouTube Shorts
+
+1. Mở tab **Truyện ngắn**, chọn mô-típ như thiên kim thật giả, tráo đổi thân phận hoặc tái sinh.
+2. Nhập ý tưởng trung tâm và tên nhân vật; AI lập dàn ý 8 chương từ ý tưởng đó rồi viết lần lượt để giữ mạch truyện.
+3. Chọn thời lượng tối thiểu 15–20 phút, tông kể, kiểu kết và giọng đọc.
+4. Nhận kịch bản, caption, audio tiếng Việt và file văn bản. Truyện dài dùng model Ollama local; cài bằng lệnh docker compose exec ollama ollama pull qwen2.5:7b.
+
+### AI Video miễn phí / Hugging Face ZeroGPU
+
+1. Không cần API key trả phí. Có thể tạo Hugging Face access token miễn phí, rồi đặt biến `HF_TOKEN` để dùng quota theo tài khoản.
+2. Rebuild app bằng `docker compose up -d --build app`.
+3. Mỗi yêu cầu sinh clip I2V ngắn từ ảnh rồi ghép voiceover. Có thể phải xếp hàng hoặc chờ quota hằng ngày reset.
+
+### GPU / ComfyUI local
 
 1. Chạy ComfyUI (`:8188`).
 2. Export workflow I2V ở **API Format** → `workflows/i2v_ltx.json`.
@@ -92,7 +110,7 @@ docker compose exec ollama ollama pull qwen2.5:7b
    AVA_COMFYUI_ENABLED=true
    AVA_COMFYUI_URL=http://127.0.0.1:8188
    ```
-4. Không có ComfyUI / workflow → tự động fallback CPU.
+4. Đặt `AVA_VIDEO_PROVIDER=comfyui`; không có ComfyUI/workflow sẽ báo lỗi, không giả làm video AI.
 
 ---
 

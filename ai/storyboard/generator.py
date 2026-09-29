@@ -154,7 +154,7 @@ def _fallback_storyboard(
             Scene(
                 scene_id=i + 1,
                 role=role,
-                description=f"{role.capitalize()} – {product.name} tại {loc}",
+                description=f"{role.capitalize()} – {product.name} tại {loc}. {product.image_description}".strip(),
                 location=loc,
                 camera=camera,
                 lighting=lighting,
@@ -163,7 +163,7 @@ def _fallback_storyboard(
                 image_index=img_idx,
                 i2v_prompt=_i2v_prompt(
                     product.name, loc, camera, lighting, color, role
-                ),
+                ) + (f" Product appearance from reference: {product.image_description}." if product.image_description else ""),
                 negative_prompt=(
                     "blurry, deformed, text, watermark, logo change, "
                     "color shift, extra limbs, low quality"
@@ -198,7 +198,7 @@ def _parse_llm_storyboard(data: dict, product: ProductInput) -> Storyboard:
                 lighting=str(s.get("lighting") or "Natural"),
                 color_grade=str(s.get("color_grade") or "Warm"),
                 duration=float(s.get("duration") or 5.0),
-                image_index=int(s.get("image_index") or 0) % num_images,
+                image_index=max(0, int(s.get("image_index") or 0)) % num_images,
                 i2v_prompt=str(s.get("i2v_prompt") or ""),
                 negative_prompt=str(
                     s.get("negative_prompt")
@@ -242,7 +242,7 @@ def generate_storyboard(
         category=product.category,
         concept=analysis.concept,
         mood=analysis.mood,
-        usp=", ".join(analysis.usp),
+        usp=", ".join(analysis.usp) + (". Đặc điểm ảnh: " + product.image_description if product.image_description else ""),
         num_images=max(1, len(product.image_paths)),
         duration=product.duration or settings.default_duration,
     )

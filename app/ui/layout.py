@@ -16,22 +16,23 @@ CATEGORIES = [
 def build_header() -> None:
     from core.config import settings
 
-    gpu_on = settings.comfyui_enabled or settings.render_mode.value == "gpu"
     mode_line = (
-        "🟢 **Mode: AI Video (ComfyUI I2V)** — video chuyển động thật"
-        if gpu_on
-        else "🟡 **Mode free CPU** — đa cảnh từ nhiều ảnh + AI script + voice (không phải neural I2V)"
+        "🟢 **AI Image-to-Video miễn phí: Hugging Face ZeroGPU / Wan 2.2** — quota hằng ngày, có thể phải chờ"
+        if settings.video_provider == "hf_zerogpu"
+        else "🟢 **AI Image-to-Video: fal.ai / Wan** — cần API key; ảnh được gửi lên cloud và tính phí theo giây"
+        if settings.video_provider == "fal"
+        else "🟢 **AI Image-to-Video: ComfyUI** — cần GPU NVIDIA, model và workflow local"
+        if settings.video_provider == "comfyui"
+        else "🟡 **CPU preview** — chỉ pan/zoom ảnh, không tạo chuyển động AI"
     )
     gr.Markdown(
         f"""
 # 🎬 Affiliate Video AI
-**AI Script · Storyboard · Voice Việt · 9:16 · 100% Free / Local**
+**Phân tích ảnh · Script · Storyboard · Voice Việt · 9:16**
 
 {mode_line}
 
-**Máy không GPU — cách dùng tốt nhất:** upload **3–5 ảnh** cùng SP (góc khác nhau).  
-AI chia nhiều cảnh + motion khác nhau + voice + caption.  
-Neural video (Wan/Kling) cần GPU NVIDIA — không có thì không chạy free local được.
+Upload ảnh sản phẩm. Backend cloud tạo clip chuyển động AI ngắn rồi ghép voiceover tiếng Việt. Hugging Face ZeroGPU có quota miễn phí và giới hạn hàng đợi; ảnh được gửi tới Space để xử lý.
         """
     )
 
@@ -58,14 +59,15 @@ def build_single_tab():
                 max_lines=1,
             )
             images = gr.File(
-                label="Ảnh sản phẩm — NÊN 3–5 ảnh (góc khác nhau)",
+                label="Ảnh sản phẩm — dùng để phân tích và dựng video",
                 file_count="multiple",
                 file_types=["image"],
                 type="filepath",
             )
             gr.Markdown(
-                "*Mỗi ảnh = 1 góc/cảnh. Nhiều ảnh → video đa cảnh rõ hơn. "
-                "1 ảnh hoặc 0 ảnh → chất lượng kém hơn nhiều.*"
+                "*Video mặc định theo phong cách quảng cáo hoạt hình 3D với nhân vật hư cấu; nội dung được truyền tải bằng voiceover, không chèn chữ trang trí. "
+                "Ảnh có người mặc sản phẩm thường giúp AI tạo nhân vật và bố cục tự nhiên hơn ảnh chụp sản phẩm đặt phẳng. "
+                "AI tái tạo khung hình nên màu, đường may hoặc chi tiết nhỏ vẫn có thể khác ảnh mẫu.*"
             )
             duration = gr.Slider(
                 minimum=settings.min_duration,
@@ -126,6 +128,68 @@ Upload file **Excel (.xlsx)** hoặc **CSV** với các cột:
         "batch_btn": batch_btn,
         "batch_log": batch_log,
         "batch_gallery": batch_gallery,
+    }
+
+
+def build_story_tab():
+    """Fictional story + voiceover creation, separate from product videos."""
+    tropes = [
+        "Thiên kim thật giả / tráo đổi thân phận",
+        "Bị phản bội, bắt đầu lại",
+        "Tái sinh và trả thù",
+        "Hôn nhân hợp đồng, thân phận bí mật",
+        "Chủ đề tự nhập",
+    ]
+    with gr.Row():
+        with gr.Column(scale=1):
+            trope = gr.Dropdown(tropes, value=tropes[0], label="Mô-típ truyện")
+            premise = gr.Textbox(
+                label="Ý tưởng thêm (tùy chọn)",
+                placeholder="Ví dụ: cô gái bị tráo thân phận phát hiện người chị mới là người cứu mình năm xưa...",
+                lines=3,
+            )
+            protagonist = gr.Textbox(label="Tên nhân vật chính", value="An Nhiên", max_lines=1)
+            tone = gr.Dropdown(
+                ["Kịch tính, cảm xúc", "Lãng mạn", "Bí ẩn, hồi hộp", "Ấm áp, chữa lành", "Hài hước"],
+                value="Kịch tính, cảm xúc",
+                label="Tông kể chuyện",
+            )
+            ending = gr.Dropdown(
+                ["Cliffhanger tập sau", "Twist bất ngờ", "Kết có hậu", "Bi kịch cảm động"],
+                value="Cliffhanger tập sau",
+                label="Kiểu kết",
+            )
+            duration = gr.Dropdown(
+                [("15 phút", 900), ("16 phút", 960), ("18 phút", 1080), ("20 phút", 1200)],
+                value=960,
+                label="Thời lượng tối thiểu",
+            )
+            voice = gr.Dropdown(
+                choices=list(list_voices().keys()),
+                value="Nữ miền Bắc (Hương Hạnh)",
+                label="Giọng kể",
+            )
+            btn = gr.Button("✨ Viết truyện & tạo giọng kể", variant="primary", size="lg")
+            gr.Markdown(
+                "*Truyện dài nhiều chương, tối thiểu 15 phút. AI sẽ lập dàn ý từ ý tưởng của bạn trước rồi viết từng chương theo cùng cốt truyện. "
+                "Cần Ollama và model qwen2.5:7b cài trong Docker. "
+                "Mục này tạo truyện hư cấu, lời thoại và file giọng đọc để bạn dùng cho TikTok/YouTube. "
+                "App kiểm tra dàn ý và đoạn mở đầu có giữ đúng ý tưởng hay không; nếu sai, app sẽ dừng sớm thay vì viết dài sai hướng. "
+                "Câu lẫn ký tự ngoại ngữ sẽ được bỏ, không chèn câu đệm. Bản nháp được lưu sau từng chương để lần thử lại tiếp tục. "
+                "Không cần ảnh sản phẩm; đầu ra là kịch bản và audio, chưa tự dựng video hình ảnh.*"
+            )
+        with gr.Column(scale=1):
+            info = gr.Markdown()
+            title = gr.Textbox(label="Tiêu đề", interactive=False)
+            script = gr.Textbox(label="Kịch bản voiceover", lines=16, interactive=False)
+            caption = gr.Textbox(label="Caption & hashtag", lines=4, interactive=False)
+            audio = gr.Audio(label="Nghe thử giọng kể", type="filepath")
+            download = gr.File(label="Tải kịch bản (.txt)", interactive=False)
+
+    return {
+        "inputs": [trope, premise, protagonist, tone, ending, duration, voice],
+        "btn": btn,
+        "outputs": [info, title, script, caption, audio, download],
     }
 
 

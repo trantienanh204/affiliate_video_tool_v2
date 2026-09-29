@@ -7,6 +7,9 @@ Returns audio file path + measured duration.
 from __future__ import annotations
 
 import asyncio
+import re
+import subprocess
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -44,6 +47,91 @@ async def _synthesize(text: str, voice: str, output_path: Path, rate: str = "+0%
     await communicate.save(str(output_path))
 
 
+def _split_for_tts(text: str, max_chars: int = 2600) -> list[str]:
+    """Split long narration at sentence boundaries for reliable TTS requests."""
+    sentences = re.split(r"(?<=[.!?…])\s+|\n+", text.strip())
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        pieces = [sentence]
+        if len(sentence) > max_chars:
+            words = sentence.split()
+            pieces = []
+            piece = ""
+            for word in words:
+                if piece and len(piece) + len(word) + 1 > max_chars:
+                    pieces.append(piece)
+                    piece = word
+                else:
+                    piece = f"{piece} {word}".strip()
+            if piece:
+                pieces.append(piece)
+        for piece in pieces:
+            if current and len(current) + len(piece) + 1 > max_chars:
+                chunks.append(current)
+                current = piece
+            else:
+                current = f"{current} {piece}".strip()
+    if current:
+        chunks.append(current)
+    return chunks or [text.strip()]
+
+
+async def _synthesize_retry(text: str, voice: str, path: Path, rate: str, volume: str) -> None:
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            await _synthesize(text, voice, path, rate=rate, volume=volume)
+            if path.is_file() and path.stat().st_size >= 100:
+                return
+            raise RuntimeError("Edge TTS returned an empty audio chunk")
+        except Exception as exc:
+            last_error = exc
+            if path.exists():
+                path.unlink()
+            if attempt < 2:
+                await asyncio.sleep(0.7 * (attempt + 1))
+    raise RuntimeError(f"Edge TTS failed after 3 attempts: {last_error}") from last_error
+
+
+async def _synthesize_long_text(text: str, voice: str, output_path: Path, rate: str, volume: str) -> None:
+    chunks = _split_for_tts(text)
+    if len(chunks) == 1:
+        await _synthesize_retry(chunks[0], voice, output_path, rate, volume)
+        return
+
+    import imageio_ffmpeg
+
+    with tempfile.TemporaryDirectory(prefix="edge_tts_parts_", dir=output_path.parent) as temp_dir:
+        part_paths = [Path(temp_dir) / f"part_{index:03d}.mp3" for index in range(len(chunks))]
+        for part_text, part_path in zip(chunks, part_paths):
+            await _synthesize_retry(part_text, voice, part_path, rate, volume)
+
+        manifest = Path(temp_dir) / "concat.txt"
+        manifest.write_text(
+            "".join(
+                f"file '{str(path.resolve()).replace(chr(92), '/').replace(chr(39), chr(92) + chr(39))}'\n"
+                for path in part_paths
+            ),
+            encoding="utf-8",
+        )
+        ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+        try:
+            subprocess.run(
+                [ffmpeg, "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(manifest), "-c", "copy", str(output_path)],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        except Exception as exc:
+            detail = getattr(exc, "stderr", "") or str(exc)
+            raise RuntimeError(f"Could not join TTS audio chunks: {detail[-500:]}") from exc
+
+
 def generate_tts(
     text: str,
     *,
@@ -75,7 +163,7 @@ def generate_tts(
     logger.info("TTS start | voice=%s | chars=%d | out=%s", voice_id, len(text), output_path.name)
 
     try:
-        asyncio.run(_synthesize(text.strip(), voice_id, output_path, rate=rate, volume=volume))
+        asyncio.run(_synthesize_long_text(text.strip(), voice_id, output_path, rate, volume))
     except Exception as e:
         raise TTSError(f"edge-tts failed: {e}", details=str(e)) from e
 

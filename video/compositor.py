@@ -7,63 +7,112 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 from moviepy import (
     AudioFileClip,
     CompositeVideoClip,
-    TextClip,
+    ImageClip,
+    VideoClip,
+    VideoFileClip,
     concatenate_videoclips,
     ColorClip,
+    vfx,
 )
 
 from core.config import settings
 from core.exceptions import VideoRenderError
 from core.logging import get_logger
 from models.storyboard import Scene, Storyboard
-from utils.fonts import find_vietnamese_font
 from video.kenburns import make_kenburns_clip
 
 logger = get_logger(__name__)
 
 
-def _make_text(
-    txt: str,
-    *,
-    fontsize: int = 44,
-    color: str = "white",
-    stroke: bool = True,
-    width: int | None = None,
-) -> TextClip:
-    w = width or settings.video_width
-    font = find_vietnamese_font()
-    kwargs = dict(
-        text=str(txt)[:120],
-        font_size=fontsize,
-        color=color,
-        method="caption",
-        size=(w - 120, None),
-        text_align="center",
-    )
-    if font:
-        kwargs["font"] = font
-    if stroke:
-        kwargs["stroke_color"] = "black"
-        kwargs["stroke_width"] = 3
+def compose_ai_character_video(
+    ai_video_path: Path | str,
+    audio_path: Path | str,
+    output_path: Path | str,
+) -> Path:
+    """Compose an AI-animated hero clip over a soft full-bleed backdrop.
+
+    The generative clip stays visible as the main scene. No product cutout or
+    text is pasted over the character; voiceover carries the sales message.
+    """
+    width = min(settings.video_width, 720)
+    height = round(width * 16 / 9)
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    audio = AudioFileClip(str(audio_path))
+    duration = float(audio.duration)
+    source = VideoFileClip(str(ai_video_path)).without_audio()
+    source_duration = max(float(source.duration), 0.2)
+
+    def loop_time(t: float) -> float:
+        # Ping-pong looping avoids a hard jump at the end of the short I2V clip.
+        phase = t % (source_duration * 2)
+        sample_t = phase if phase <= source_duration else source_duration * 2 - phase
+        return min(sample_t, max(0.0, source_duration - 1.0 / max(settings.video_fps, 1)))
+
+    # Full-bleed, blurred copy of the animated scene provides a coherent canvas.
+    def ambient_frame(t: float) -> np.ndarray:
+        frame = source.get_frame(loop_time(t))
+        backdrop = Image.fromarray(frame.astype(np.uint8)).convert("RGB")
+        # Build/blur at half resolution to keep the CPU compositor responsive.
+        small_size = (max(1, width // 2), max(1, height // 2))
+        scale = max(small_size[0] / backdrop.width, small_size[1] / backdrop.height)
+        backdrop = backdrop.resize((round(backdrop.width * scale), round(backdrop.height * scale)), Image.Resampling.BILINEAR)
+        left = (backdrop.width - small_size[0]) // 2
+        top = (backdrop.height - small_size[1]) // 2
+        backdrop = backdrop.crop((left, top, left + small_size[0], top + small_size[1]))
+        backdrop = ImageEnhance.Brightness(backdrop.filter(ImageFilter.GaussianBlur(24))).enhance(0.34)
+        # Slow ambient color movement gives the loop distinct light and depth.
+        glow = Image.new("RGBA", small_size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(glow)
+        cx = int(small_size[0] * (0.20 + 0.60 * ((t / 8.0) % 1.0)))
+        draw.ellipse((cx - small_size[0], -small_size[1] // 3, cx + small_size[0], small_size[1] // 2), fill=(124, 58, 237, 46))
+        glow = glow.filter(ImageFilter.GaussianBlur(45))
+        frame = Image.alpha_composite(backdrop.convert("RGBA"), glow).resize((width, height), Image.Resampling.BILINEAR)
+        return np.asarray(frame.convert("RGB"), dtype=np.uint8)
+
+    ambient = VideoClip(frame_function=ambient_frame, duration=duration)
+    layers = [ambient]
+
+    # Reuse the same generated clip at full width, with a feathered perimeter so
+    # the square I2V frame blends into the portrait background instead of looking
+    # like a still-image card. The clip shows the animated character/product.
+    hero = VideoClip(frame_function=lambda t: source.get_frame(loop_time(t)), duration=duration)
+    hero_h = max(1, round(width * source.h / source.w))
+    hero = hero.resized(width=width)
+    feather = max(18, round(width * 0.065))
+    mask = np.ones((hero_h, width), dtype=np.float32)
+    fade_x = np.clip(np.arange(width, dtype=np.float32) / feather, 0.0, 1.0)
+    fade_y = np.clip(np.arange(hero_h, dtype=np.float32) / feather, 0.0, 1.0)
+    mask *= np.minimum(fade_x, fade_x[::-1])[None, :]
+    mask *= np.minimum(fade_y, fade_y[::-1])[:, None]
+    mask_clip = ImageClip(mask, is_mask=True).with_duration(duration)
+    hero = hero.with_mask(mask_clip).with_position(("center", (height - hero_h) // 2))
+    layers.append(hero)
+
+    video = CompositeVideoClip(layers, size=(width, height)).with_duration(duration)
+    video = video.with_audio(audio.subclipped(0, duration))
     try:
-        return TextClip(**kwargs)
-    except Exception:
-        kwargs.pop("stroke_color", None)
-        kwargs.pop("stroke_width", None)
-        try:
-            return TextClip(**kwargs)
-        except Exception as e:
-            logger.warning("TextClip failed: %s", e)
-            return TextClip(
-                text=str(txt)[:40],
-                font_size=fontsize,
-                color=color,
-                method="caption",
-                size=(w - 120, None),
-            )
+        video.write_videofile(
+            str(output), fps=min(settings.video_fps, 15), codec="libx264", audio_codec="aac",
+            threads=4, logger=None, preset="ultrafast", bitrate=settings.video_bitrate,
+        )
+    finally:
+        video.close()
+        source.close()
+        audio.close()
+        hero.close()
+        mask_clip.close()
+        for layer in layers:
+            try:
+                layer.close()
+            except Exception:
+                pass
+    return output
 
 
 def _scene_clip(
@@ -111,29 +160,7 @@ def _scene_clip(
 
     layers = [base]
 
-    # When we have a real image, burn text overlay on top.
-    # When placeholder: card already has product name – still add hook/cta for emphasis.
-    if scene.text_overlay:
-        if scene.role == "hook":
-            fs, col, y = 52, "white", 100
-        elif scene.role == "cta":
-            fs, col, y = 46, "#FBBF24", height - 280
-        else:
-            fs, col, y = 40, "#F1F5F9", 140
-
-        # If no image, push overlay lower so it doesn't clash with card center
-        if not img and scene.role not in ("cta",):
-            y = height - 320
-
-        try:
-            txt = (
-                _make_text(scene.text_overlay, fontsize=fs, color=col)
-                .with_duration(scene.duration)
-                .with_position(("center", y))
-            )
-            layers.append(txt)
-        except Exception as e:
-            logger.warning("Overlay failed for scene %s: %s", scene.scene_id, e)
+    # Narration carries the message; keep the video image uncluttered.
 
     return CompositeVideoClip(layers, size=(width, height)).with_duration(scene.duration)
 
