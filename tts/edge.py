@@ -24,10 +24,15 @@ logger = get_logger(__name__)
 
 # Friendly name → edge-tts voice id
 VOICES: dict[str, str] = {
+    # Tiếng Việt
     "Nữ dễ thương (Hoài My)": "vi-VN-HoaiMyNeural",
     "Nữ miền Bắc (Hương Hạnh)": "vi-VN-HuongHanhNeural",
     "Nam miền Bắc (Nam Minh)": "vi-VN-NamMinhNeural",
-    "Nữ miền Nam (Hoài My)": "vi-VN-HoaiMyNeural",  # alias
+    "Nữ miền Nam (Hoài My)": "vi-VN-HoaiMyNeural",
+    # Tiếng Anh (English for Kids & Bilingual)
+    "Bé gái Mỹ dễ thương (Ana US - Tiếng Anh)": "en-US-AnaNeural",
+    "Nữ phát âm tiếng Anh chuẩn (Jenny US)": "en-US-JennyNeural",
+    "Nam phát âm tiếng Anh (Guy US)": "en-US-GuyNeural",
 }
 
 DEFAULT_VOICE = "vi-VN-HoaiMyNeural"
@@ -37,8 +42,11 @@ def resolve_voice(voice_name_or_id: str) -> str:
     """Accept friendly name or raw voice id."""
     if voice_name_or_id in VOICES:
         return VOICES[voice_name_or_id]
-    if voice_name_or_id.startswith("vi-VN-"):
+    if any(voice_name_or_id.startswith(prefix) for prefix in ("vi-VN-", "en-US-", "en-GB-")):
         return voice_name_or_id
+    for name, vid in VOICES.items():
+        if voice_name_or_id.lower() in name.lower() or voice_name_or_id.lower() in vid.lower():
+            return vid
     return DEFAULT_VOICE
 
 

@@ -54,9 +54,46 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
-def save_result(result: JobResult, *, status: str = "done", error: str | None = None) -> None:
-    """Persist a successful (or failed) job."""
-    meta = result.meta or {}
+def save_result(
+    result: JobResult | None = None,
+    *,
+    job_id: str | None = None,
+    status: str = "done",
+    video_path: str | Path | None = None,
+    product_name: str = "",
+    category: str = "",
+    concept: str = "",
+    scenes_count: int = 0,
+    duration: float = 0.0,
+    caption: str = "",
+    script_text: str = "",
+    meta: dict[str, Any] | None = None,
+    error: str | None = None,
+) -> None:
+    """Persist a successful (or failed) job. Supports both JobResult and direct kwargs."""
+    if result is not None:
+        j_id = result.job_id
+        v_path = str(result.video_path) if result.video_path else None
+        m = result.meta or {}
+        p_name = m.get("product_name") or product_name or ""
+        cat = m.get("category") or category or ""
+        conc = m.get("concept") or concept or ""
+        s_count = m.get("scenes") or scenes_count or 0
+        dur = result.duration
+        cap = result.caption
+        script = result.script_text
+    else:
+        j_id = job_id or "unknown"
+        v_path = str(video_path) if video_path else None
+        m = meta or {}
+        p_name = product_name or m.get("product_name") or ""
+        cat = category or m.get("category") or ""
+        conc = concept or m.get("concept") or ""
+        s_count = scenes_count or m.get("scenes") or 0
+        dur = duration
+        cap = caption
+        script = script_text
+
     now = datetime.utcnow().isoformat()
     with _connect() as conn:
         conn.execute(
@@ -67,24 +104,24 @@ def save_result(result: JobResult, *, status: str = "done", error: str | None = 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                result.job_id,
+                j_id,
                 status,
-                meta.get("product_name") or "",
-                meta.get("category") or "",
-                meta.get("concept") or "",
-                meta.get("scenes") or 0,
-                result.duration,
-                str(result.video_path) if result.video_path else None,
-                result.caption,
-                result.script_text,
-                json.dumps(meta, ensure_ascii=False),
+                p_name,
+                cat,
+                conc,
+                s_count,
+                dur,
+                v_path,
+                cap,
+                script,
+                json.dumps(m, ensure_ascii=False),
                 error,
                 now,
                 now,
             ),
         )
         conn.commit()
-    logger.info("History saved | job=%s | status=%s", result.job_id, status)
+    logger.info("History saved | job=%s | status=%s", j_id, status)
 
 
 def save_failure(

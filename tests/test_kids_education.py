@@ -69,3 +69,47 @@ def test_render_kids_video_offline(tmp_path):
     )
     assert res.is_file()
     assert res.stat().st_size > 5000
+
+
+def test_save_result_flexible_signature():
+    """Verify save_result can be called with kwargs without raising TypeError."""
+    from services.history import save_result
+    # Should not raise TypeError: save_result() got an unexpected keyword argument 'job_id'
+    save_result(
+        job_id="test_job_12345",
+        status="completed",
+        video_path="outputs/test.mp4",
+        product_name="Test Product",
+        category="Kids",
+        concept="Preset english_basics",
+        scenes_count=4,
+        duration=14.0,
+        meta={"preset": "english_basics"},
+    )
+
+
+def test_new_fun_and_english_presets():
+    """Verify new English learning and funny cartoon presets exist."""
+    presets = get_available_presets()
+    preset_ids = [p["id"] for p in presets]
+    assert "english_basics" in preset_ids
+    assert "english_phonics" in preset_ids
+    assert "funny_cartoons" in preset_ids
+    assert "happy_dance" in preset_ids
+
+    funny_cards = get_preset_cards("funny_cartoons")
+    assert len(funny_cards) >= 4
+    assert any("Mèo" in c.title or "Cún" in c.title for c in funny_cards)
+
+    english_cards = get_preset_cards("english_basics")
+    assert len(english_cards) >= 4
+    assert any("Hello" in c.title or "Thank You" in c.title for c in english_cards)
+
+
+def test_english_voice_resolution():
+    """Verify that English neural voices resolve properly."""
+    from tts.edge import resolve_voice, VOICES
+    assert "Bé gái Mỹ dễ thương (Ana US - Tiếng Anh)" in VOICES
+    assert resolve_voice("Bé gái Mỹ dễ thương (Ana US - Tiếng Anh)") == "en-US-AnaNeural"
+    assert resolve_voice("en-US-JennyNeural") == "en-US-JennyNeural"
+
