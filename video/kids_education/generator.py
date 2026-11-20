@@ -1,16 +1,13 @@
-"""Generator pipeline for Kids Education videos (0đ cost, MoviePy 2D/2.5D Animation, Edge-TTS & BGM)."""
+"""Generator pipeline for Kids Education videos (0đ cost, MoviePy 2D/2.5D Animation, Edge-TTS & BGM).
+
+All character images are now drawn 100% procedurally (PIL) — no external image APIs needed.
+This guarantees visual relevance: rabbit card → draws a kawaii rabbit, bear card → draws a bear, etc.
+"""
 
 from __future__ import annotations
 
-import io
-import random
-import re
-import urllib.parse
 from pathlib import Path
 from typing import Callable, Optional
-
-import httpx
-from PIL import Image
 
 from core.config import settings
 from core.logging import get_logger
@@ -24,109 +21,24 @@ logger = get_logger(__name__)
 ProgressCb = Optional[Callable[[float, str], None]]
 
 
-def _extract_cartoon_keyword(prompt: str, title: str) -> str:
-    """Extracts targeted keyword for public domain clipart / cartoon search."""
-    combined = f"{title} {prompt}".lower()
-    mapping = [
-        (["rabbit", "bunny", "thỏ"], "cartoon rabbit"),
-        (["apple", "táo"], "cartoon apple"),
-        (["bear", "gấu"], "cartoon bear"),
-        (["monkey", "khỉ"], "cartoon monkey"),
-        (["cat", "mèo", "kitten"], "cartoon cat"),
-        (["dog", "cún", "chó", "puppy"], "cartoon puppy"),
-        (["elephant", "voi"], "cartoon elephant"),
-        (["lion", "sư tử"], "cartoon lion"),
-        (["police", "cảnh sát"], "cartoon police car"),
-        (["fire truck", "cứu hoả", "cứu hỏa"], "cartoon fire truck"),
-        (["car", "xe", "ô tô"], "cartoon car"),
-        (["train", "tàu hỏa"], "cartoon train"),
-        (["rainbow", "cầu vồng"], "cartoon rainbow"),
-        (["sun", "mặt trời"], "cartoon smiling sun"),
-    ]
-    for words, target in mapping:
-        if any(w in combined for w in words):
-            return target
-    clean = re.sub(r"[^a-zA-Z0-9 ]", " ", prompt).split()
-    return f"cartoon {clean[0]}" if clean else "cartoon character"
-
-
-def _fetch_wikimedia_cartoon(keyword: str) -> Optional[Image.Image]:
-    """Fetches a free, high-resolution public domain cartoon illustration from Wikimedia Commons."""
-    headers = {
-        "User-Agent": "KidsEducationVideoBot/1.0 (https://github.com/kidsapp; contact@example.com)"
-    }
-    params = {
-        "action": "query",
-        "generator": "search",
-        "gsrsearch": f"{keyword} filetype:bitmap|drawing",
-        "gsrnamespace": 6,
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "iiurlwidth": 600,
-        "format": "json",
-        "gsrlimit": 4,
-    }
-    try:
-        with httpx.Client(timeout=7.0, headers=headers, follow_redirects=True) as client:
-            resp = client.get("https://commons.wikimedia.org/w/api.php", params=params)
-            if resp.status_code == 200:
-                pages = resp.json().get("query", {}).get("pages", {})
-                for pid, val in pages.items():
-                    thumb = val.get("imageinfo", [{}])[0].get("thumburl")
-                    if thumb:
-                        img_resp = client.get(thumb)
-                        if img_resp.status_code == 200 and len(img_resp.content) > 5000:
-                            img = Image.open(io.BytesIO(img_resp.content))
-                            logger.info("Found Wikimedia cartoon for '%s' (%d bytes, %s)", keyword, len(img_resp.content), img.size)
-                            return img
-    except Exception as e:
-        logger.warning("Wikimedia search failed for '%s': %s", keyword, e)
+def acquire_card_character_image(card: KidsCard) -> None:
+    """Deprecated: character images are now drawn procedurally inside make_kids_animated_scene_clip.
+    Kept for backward compatibility — always returns None."""
     return None
-
-
-def _fetch_pollinations_ai(prompt: str) -> Optional[Image.Image]:
-    """Attempts fast AI generation from Pollinations (0đ, short timeout)."""
-    seed = random.randint(1000, 999999)
-    prompt_full = f"{prompt}, vibrant cartoon clipart, 3d pixar disney style, cute, white background"
-    prompt_enc = urllib.parse.quote(prompt_full)
-    url = f"https://image.pollinations.ai/prompt/{prompt_enc}?width=512&height=512&nologo=true&seed={seed}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    }
-    try:
-        with httpx.Client(timeout=4.5, headers=headers, follow_redirects=True) as client:
-            resp = client.get(url)
-            if resp.status_code == 200 and len(resp.content) > 1000:
-                return Image.open(io.BytesIO(resp.content))
-    except Exception as e:
-        logger.debug("Pollinations AI skipped (%s)", e)
-    return None
-
-
-def acquire_card_character_image(card: KidsCard) -> Optional[Image.Image]:
-    """Acquires a cartoon character illustration via Wikimedia Commons or Pollinations AI."""
-    keyword = _extract_cartoon_keyword(card.image_prompt, card.title)
-    center_img = _fetch_wikimedia_cartoon(keyword)
-    if center_img is None:
-        center_img = _fetch_pollinations_ai(card.image_prompt)
-    return center_img
 
 
 def download_or_generate_card_image(
     card: KidsCard,
     output_path: Path,
-    center_image: Optional[Image.Image] = None,
+    center_image=None,
 ) -> Path:
     """
-    Renders a static flashcard image for poster/thumbnail preview.
+    Renders a static flashcard image for poster/thumbnail preview (thumbnail only).
+    Characters are drawn procedurally inside the animation engine.
     """
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if center_image is None:
-        center_image = acquire_card_character_image(card)
-
-    return create_flashcard_image(card, output_path, center_image=center_image)
+    return create_flashcard_image(card, output_path, center_image=None)
 
 
 def render_kids_education_video(
@@ -171,12 +83,9 @@ def render_kids_education_video(
         if progress_cb:
             progress_cb(frac, f"Đang tạo hoạt hình chuyển động cảnh {i + 1}/{total_cards}: {card.title}...")
 
-        # 1. Acquire cartoon illustration
-        char_img = acquire_card_character_image(card)
-
-        # 2. Save thumbnail / poster preview
+        # 1. Save thumbnail / poster preview (procedural, no external fetch)
         card_img_path = temp_dir / f"card_{i:02d}.png"
-        download_or_generate_card_image(card, card_img_path, center_image=char_img)
+        download_or_generate_card_image(card, card_img_path)
 
         # 3. Audio & Duration
         audio_clip = None
@@ -199,11 +108,10 @@ def render_kids_education_video(
 
         total_audio_duration += duration
 
-        # 4. Living 2D/2.5D Animated Cartoon Scene (Bouncing character, rotating sun, drifting clouds, popping items, subtitles)
+        # 2. Living 2D/2.5D Animated Cartoon Scene (kawaii procedural character, rotating sun, drifting clouds, popping items, subtitles)
         try:
             clip = make_kids_animated_scene_clip(
                 card=card,
-                character_img=char_img,
                 duration=duration,
                 width=540,
                 height=960,

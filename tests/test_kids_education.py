@@ -207,26 +207,62 @@ def test_animals_counting_apples_topic():
 
 
 def test_kids_animated_scene_motion(tmp_path):
-    """Verify that make_kids_animated_scene_clip produces real animated video with changing frames."""
-    from PIL import Image
-    from video.kids_education.animation import make_kids_animated_scene_clip
+    """Verify that make_kids_animated_scene_clip produces real animated video with changing frames.
+    Characters are drawn procedurally — each card type produces the matching kawaii animal.
+    """
+    from video.kids_education.animation import make_kids_animated_scene_clip, _detect_character_type
 
-    card = KidsCard(
+    # 1. Character type detection
+    from video.kids_education.presets import KidsCard
+
+    rabbit_card = KidsCard(
         title="1 Quả Táo - One Apple 🍎",
         subtitle="Thỏ trắng tìm thấy táo",
         spoken_text="Look! A cute white bunny found 1 shiny red apple! Crunch crunch!",
-        image_prompt="cute cartoon bunny",
+        image_prompt="cute cartoon white bunny rabbit holding 1 red apple",
         emoji="🐰",
         theme_color="#FF6B6B",
     )
-    test_char = Image.new("RGBA", (150, 150), (255, 100, 100, 255))
-    clip = make_kids_animated_scene_clip(card, character_img=test_char, duration=2.0)
+    assert _detect_character_type(rabbit_card) == "rabbit"
+
+    bear_card = KidsCard(
+        title="2 Quả Táo 🐻",
+        subtitle="Gấu mang táo",
+        spoken_text="Bear brings 2 apples!",
+        image_prompt="cute cartoon brown bear holding 2 red apples",
+        emoji="🐻",
+        theme_color="#4ECDC4",
+    )
+    assert _detect_character_type(bear_card) == "bear"
+
+    monkey_card = KidsCard(
+        title="3 Quả Táo 🐵",
+        subtitle="Khỉ tung hứng",
+        spoken_text="Monkey juggling 3 apples!",
+        image_prompt="cute cartoon monkey juggling 3 red apples",
+        emoji="🐵",
+        theme_color="#FFE66D",
+    )
+    assert _detect_character_type(monkey_card) == "monkey"
+
+    party_card = KidsCard(
+        title="4 Quả Táo 🎉",
+        subtitle="Party time!",
+        spoken_text="Animal party with 4 apples! Hooray!",
+        image_prompt="cute cartoon puppy dog with apples celebration party",
+        emoji="🎉",
+        theme_color="#9B5DE5",
+    )
+    assert _detect_character_type(party_card) == "party"
+
+    # 2. Animation clip generates motion frames without needing external image
+    clip = make_kids_animated_scene_clip(rabbit_card, duration=2.0)
     assert clip.duration == 2.0
 
-    # Frame at t=0.2 and t=0.8 must have dynamic motion (not identical static array)
     frame1 = clip.get_frame(0.2)
     frame2 = clip.get_frame(0.8)
     assert frame1.shape == (960, 540, 3)
+    # Frames must be different (animated motion)
     assert not (frame1 == frame2).all()
 
     out_mp4 = tmp_path / "test_motion.mp4"
