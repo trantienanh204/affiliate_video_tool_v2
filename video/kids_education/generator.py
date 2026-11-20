@@ -1,4 +1,4 @@
-"""Generator pipeline for Kids Education videos (0đ cost, MoviePy 2D/2.5D Ken Burns, Edge-TTS & BGM)."""
+"""Generator pipeline for Kids Education videos (0đ cost, MoviePy 2D/2.5D Animation, Edge-TTS & BGM)."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from PIL import Image
 from core.config import settings
 from core.logging import get_logger
 from tts.edge import generate_tts, resolve_voice
-from video.kenburns import make_kenburns_clip
+from video.kids_education.animation import make_kids_animated_scene_clip
 from video.kids_education.canvas import create_flashcard_image
 from video.kids_education.presets import KidsCard, get_preset_cards
 
@@ -103,23 +103,30 @@ def _fetch_pollinations_ai(prompt: str) -> Optional[Image.Image]:
     return None
 
 
-def download_or_generate_card_image(card: KidsCard, output_path: Path) -> Path:
+def acquire_card_character_image(card: KidsCard) -> Optional[Image.Image]:
+    """Acquires a cartoon character illustration via Wikimedia Commons or Pollinations AI."""
+    keyword = _extract_cartoon_keyword(card.image_prompt, card.title)
+    center_img = _fetch_wikimedia_cartoon(keyword)
+    if center_img is None:
+        center_img = _fetch_pollinations_ai(card.image_prompt)
+    return center_img
+
+
+def download_or_generate_card_image(
+    card: KidsCard,
+    output_path: Path,
+    center_image: Optional[Image.Image] = None,
+) -> Path:
     """
-    Acquires a relevant, kid-friendly cartoon illustration via:
-    1. Wikimedia Commons public domain cartoon clipart (free, instant, 0đ, no rate limit)
-    2. Fast Pollinations AI attempt (short timeout)
-    3. High-resolution procedural kawaii illustration in canvas.py (offline, guaranteed zero-fail)
+    Renders a static flashcard image for poster/thumbnail preview.
     """
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    keyword = _extract_cartoon_keyword(card.image_prompt, card.title)
-    center_img = _fetch_wikimedia_cartoon(keyword)
+    if center_image is None:
+        center_image = acquire_card_character_image(card)
 
-    if center_img is None:
-        center_img = _fetch_pollinations_ai(card.image_prompt)
-
-    return create_flashcard_image(card, output_path, center_image=center_img)
+    return create_flashcard_image(card, output_path, center_image=center_image)
 
 
 def render_kids_education_video(
@@ -130,8 +137,9 @@ def render_kids_education_video(
     progress_cb: ProgressCb = None,
 ) -> Path:
     """
-    Composes a multi-card Kids Education video (9:16 format) using MoviePy.
-    Applies Ken Burns zoom motion + neural speech sync + upbeat cheerful background music.
+    Composes a multi-scene Kids Education animation video (9:16 format) using MoviePy.
+    Each scene features lively 2D/2.5D cartoon animation (hopping character, rotating sun,
+    drifting clouds, popping counting items, and synchronized spoken subtitles) + upbeat BGM.
     """
     from moviepy import (
         AudioFileClip,
@@ -161,11 +169,16 @@ def render_kids_education_video(
     for i, card in enumerate(cards):
         frac = 0.1 + 0.65 * (i / total_cards)
         if progress_cb:
-            progress_cb(frac, f"Đang vẽ hình và chuẩn bị thẻ {i + 1}/{total_cards}: {card.title}...")
+            progress_cb(frac, f"Đang tạo hoạt hình chuyển động cảnh {i + 1}/{total_cards}: {card.title}...")
 
+        # 1. Acquire cartoon illustration
+        char_img = acquire_card_character_image(card)
+
+        # 2. Save thumbnail / poster preview
         card_img_path = temp_dir / f"card_{i:02d}.png"
-        download_or_generate_card_image(card, card_img_path)
+        download_or_generate_card_image(card, card_img_path, center_image=char_img)
 
+        # 3. Audio & Duration
         audio_clip = None
         duration = 3.8
 
@@ -186,22 +199,17 @@ def render_kids_education_video(
 
         total_audio_duration += duration
 
-        # Dynamic Ken Burns animated zoom motion
+        # 4. Living 2D/2.5D Animated Cartoon Scene (Bouncing character, rotating sun, drifting clouds, popping items, subtitles)
         try:
-            zoom_in = (i % 2 == 0)
-            z_start = 1.0 if zoom_in else 1.08
-            z_end = 1.08 if zoom_in else 1.0
-            clip = make_kenburns_clip(
-                card_img_path,
+            clip = make_kids_animated_scene_clip(
+                card=card,
+                character_img=char_img,
                 duration=duration,
                 width=540,
                 height=960,
-                zoom_start=z_start,
-                zoom_end=z_end,
-                pan_x=0.03 if (i % 2 == 1) else -0.03,
             )
         except Exception as e:
-            logger.warning("Ken Burns failed on card %d (%s); falling back to ImageClip", i, e)
+            logger.warning("Animation failed on card %d (%s); falling back to static poster", i, e)
             clip = ImageClip(str(card_img_path)).with_duration(duration)
 
         if audio_clip:
@@ -210,7 +218,7 @@ def render_kids_education_video(
         clips.append(clip)
 
     if progress_cb:
-        progress_cb(0.80, "Đang hòa âm nhạc nền vui nhộn và xuất video (MoviePy 2.5D)...")
+        progress_cb(0.80, "Đang hòa âm nhạc nền vui nhộn và kết xuất video hoạt hình...")
 
     final_video = concatenate_videoclips(clips, method="compose")
 
@@ -266,6 +274,6 @@ def render_kids_education_video(
         pass
 
     if progress_cb:
-        progress_cb(1.0, "Đã hoàn thành video giáo dục cho bé!")
+        progress_cb(1.0, "Đã hoàn thành video hoạt hình cho bé!")
 
     return output_path

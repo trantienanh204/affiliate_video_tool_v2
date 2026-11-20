@@ -195,7 +195,7 @@ def process_kids_video(
 
     try:
         prog_cb(0.05, "Đang tạo nội dung thẻ học phong phú...")
-        client = OllamaClient() if OllamaClient().is_available() else None
+        client = OllamaClient(timeout=20) if OllamaClient(timeout=4).is_available() else None
         cards = generate_dynamic_kids_cards(
             preset_id=preset_id,
             custom_topic=custom_topic,
@@ -205,7 +205,7 @@ def process_kids_video(
 
         card_md_lines = []
         for i, c in enumerate(cards):
-            card_md_lines.append(f"### {c.emoji} Thẻ {i+1}: {c.title}\n- **Phụ đề:** {c.subtitle}\n- **Giọng phát âm:** \"{c.spoken_text}\"\n")
+            card_md_lines.append(f"### {c.emoji} Cảnh {i+1}: {c.title}\n- **Phụ đề:** {c.subtitle}\n- **Giọng phát âm:** \"{c.spoken_text}\"\n")
         preview_md = "\n".join(card_md_lines)
 
         render_kids_education_video(
@@ -229,8 +229,11 @@ def process_kids_video(
             meta={"preset": preset_id, "custom_topic": custom_topic, "cards_count": len(cards)},
         )
 
-        prog_cb(1.0, "Đã hoàn thành video cho bé!")
-        info_md = f"🎉 **Đã tạo xong video cho bé!** · {len(cards)} thẻ học · Chuyển động Ken Burns · Nhạc nền vui nhộn · Định dạng 9:16"
+        prog_cb(1.0, "Đã hoàn thành video hoạt hình cho bé!")
+        info_md = (
+            f"🎉 **Đã tạo xong video hoạt hình cho bé!** · {len(cards)} phân cảnh hoạt hình 2D sống động "
+            f"· Nhân vật nhún nhảy theo nhạc · Phụ đề khớp 100% giọng phát âm · Nhạc nền vui nhộn · Định dạng 9:16"
+        )
         return str(out_video), info_md, preview_md
 
     except Exception as e:

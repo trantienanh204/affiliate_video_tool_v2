@@ -136,7 +136,7 @@ def build_kids_tab():
                 lines=2,
             )
             gr.Markdown(
-                "*Mỗi chủ đề gồm 4–5 thẻ học hoạt hình sinh động, hình ảnh rực rỡ, chữ to dễ đọc, hiệu ứng chuyển động Ken Burns và nhạc nền thiếu nhi vui nhộn.*"
+                "*Mỗi chủ đề gồm 4–5 phân cảnh hoạt hình chuyển động sinh động (nhân vật nhún nhảy, mây trôi, mặt trời quay, quả đếm nảy lên), phụ đề khớp 100% giọng đọc và nhạc nền thiếu nhi vui nhộn.*"
             )
             voice_dd = gr.Dropdown(
                 choices=list(list_voices().keys()),

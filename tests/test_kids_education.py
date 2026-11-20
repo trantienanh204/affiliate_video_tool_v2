@@ -206,4 +206,34 @@ def test_animals_counting_apples_topic():
         assert ":" not in c.emoji
 
 
+def test_kids_animated_scene_motion(tmp_path):
+    """Verify that make_kids_animated_scene_clip produces real animated video with changing frames."""
+    from PIL import Image
+    from video.kids_education.animation import make_kids_animated_scene_clip
+
+    card = KidsCard(
+        title="1 Quả Táo - One Apple 🍎",
+        subtitle="Thỏ trắng tìm thấy táo",
+        spoken_text="Look! A cute white bunny found 1 shiny red apple! Crunch crunch!",
+        image_prompt="cute cartoon bunny",
+        emoji="🐰",
+        theme_color="#FF6B6B",
+    )
+    test_char = Image.new("RGBA", (150, 150), (255, 100, 100, 255))
+    clip = make_kids_animated_scene_clip(card, character_img=test_char, duration=2.0)
+    assert clip.duration == 2.0
+
+    # Frame at t=0.2 and t=0.8 must have dynamic motion (not identical static array)
+    frame1 = clip.get_frame(0.2)
+    frame2 = clip.get_frame(0.8)
+    assert frame1.shape == (960, 540, 3)
+    assert not (frame1 == frame2).all()
+
+    out_mp4 = tmp_path / "test_motion.mp4"
+    clip.write_videofile(str(out_mp4), fps=16, codec="libx264", logger=None)
+    assert out_mp4.is_file()
+    assert out_mp4.stat().st_size > 10000
+
+
+
 
