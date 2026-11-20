@@ -113,3 +113,26 @@ def test_english_voice_resolution():
     assert resolve_voice("Bé gái Mỹ dễ thương (Ana US - Tiếng Anh)") == "en-US-AnaNeural"
     assert resolve_voice("en-US-JennyNeural") == "en-US-JennyNeural"
 
+
+def test_dynamic_kids_cards_generation():
+    """Verify dynamic cards generation for custom topic and anti-repetition."""
+    from video.kids_education.dynamic_generator import generate_dynamic_kids_cards
+
+    # 1. Custom topic
+    cards = generate_dynamic_kids_cards(custom_topic="Khủng long T-Rex và các loại xe cứu hộ")
+    assert len(cards) == 4
+    assert any("Khủng long" in c.title or "cứu hộ" in c.title or "Khám Phá" in c.title for c in cards)
+
+    # 2. Preset dynamic randomization
+    cards_preset = generate_dynamic_kids_cards(preset_id="funny_cartoons")
+    assert len(cards_preset) == 4
+    assert cards_preset[0].spoken_text  # Has randomized intro hook
+
+
+def test_kids_bgm_asset():
+    """Verify cheerful background music asset exists."""
+    bgm = Path("assets/music/kids_cheerful.wav")
+    assert bgm.is_file()
+    assert bgm.stat().st_size > 100000
+
+

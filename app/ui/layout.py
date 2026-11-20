@@ -130,8 +130,13 @@ def build_kids_tab():
                 value="vocabulary",
                 label="Chọn chủ đề giáo dục mẫu",
             )
+            custom_topic = gr.Textbox(
+                label="💡 Hoặc nhập ý tưởng / chủ đề riêng cho bé (tùy chọn)",
+                placeholder="Ví dụ: Bé học về các loại xe cứu hộ, câu chuyện hài hước chú thỏ tinh nghịch, học tiếng Anh về siêu nhân, đếm các loại quả...",
+                lines=2,
+            )
             gr.Markdown(
-                "*Mỗi chủ đề gồm 4–5 thẻ học hoạt hình sinh động, hình ảnh rực rỡ, chữ to dễ đọc và giọng phát âm chuẩn cho bé.*"
+                "*Mỗi chủ đề gồm 4–5 thẻ học hoạt hình sinh động, hình ảnh rực rỡ, chữ to dễ đọc, hiệu ứng chuyển động Ken Burns và nhạc nền thiếu nhi vui nhộn.*"
             )
             voice_dd = gr.Dropdown(
                 choices=list(list_voices().keys()),
@@ -151,7 +156,7 @@ def build_kids_tab():
                 kids_cards_preview = gr.Markdown()
 
     return {
-        "inputs": [preset_dd, voice_dd, enable_tts_cb],
+        "inputs": [preset_dd, custom_topic, voice_dd, enable_tts_cb],
         "btn": kids_btn,
         "outputs": [kids_video_out, kids_info_out, kids_cards_preview],
         "preset_dd": preset_dd,

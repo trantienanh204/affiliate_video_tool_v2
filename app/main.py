@@ -32,6 +32,7 @@ from video.custom.generator import parse_prompt_to_scenes, render_custom_video
 from video.engine import render_product
 from video.kids_education.generator import render_kids_education_video
 from video.kids_education.presets import get_preset_cards
+from video.kids_education.dynamic_generator import generate_dynamic_kids_cards
 
 from app.ui.theme import build_theme
 from app.ui.layout import (
@@ -179,6 +180,7 @@ def process_single(
 
 def process_kids_video(
     preset_id: str,
+    custom_topic: str,
     voice_name: str,
     enable_tts: bool,
     progress=gr.Progress(track_tqdm=False),
@@ -192,8 +194,9 @@ def process_kids_video(
         progress(val, desc=desc)
 
     try:
-        prog_cb(0.05, "Đang tải bộ thẻ học giáo dục...")
-        cards = get_preset_cards(preset_id)
+        prog_cb(0.05, "Đang tạo nội dung thẻ học phong phú...")
+        client = OllamaClient() if OllamaClient().is_available() else None
+        cards = generate_dynamic_kids_cards(preset_id=preset_id, custom_topic=custom_topic, client=client)
 
         card_md_lines = []
         for i, c in enumerate(cards):
@@ -208,25 +211,26 @@ def process_kids_video(
             progress_cb=prog_cb,
         )
 
+        topic_label = custom_topic.strip()[:30] if custom_topic and custom_topic.strip() else f"Preset {preset_id}"
         save_result(
             job_id=job_id,
             status="completed",
             video_path=str(out_video),
-            product_name=cards[0].title if cards else "Kids Education",
+            product_name=cards[0].title if cards else "Kids Video",
             category="Kids",
-            concept=f"Preset {preset_id}",
+            concept=topic_label,
             scenes_count=len(cards),
-            duration=len(cards) * 3.5,
-            meta={"preset": preset_id, "cards_count": len(cards)},
+            duration=len(cards) * 3.8,
+            meta={"preset": preset_id, "custom_topic": custom_topic, "cards_count": len(cards)},
         )
 
-        prog_cb(1.0, "Đã hoàn thành video giáo dục cho bé!")
-        info_md = f"🎉 **Đã tạo xong video giáo dục cho bé!** · {len(cards)} thẻ học · Định dạng 9:16 · Chi phí 0đ"
+        prog_cb(1.0, "Đã hoàn thành video cho bé!")
+        info_md = f"🎉 **Đã tạo xong video cho bé!** · {len(cards)} thẻ học · Chuyển động Ken Burns · Nhạc nền vui nhộn · Định dạng 9:16"
         return str(out_video), info_md, preview_md
 
     except Exception as e:
         logger.exception("Kids video failed: %s", e)
-        return None, f"❌ Lỗi tạo video giáo dục: {e}\n```\n{traceback.format_exc()[-400:]}\n```", ""
+        return None, f"❌ Lỗi tạo video: {e}\n```\n{traceback.format_exc()[-400:]}\n```", ""
 
 
 # ---------------------------------------------------------------------------
