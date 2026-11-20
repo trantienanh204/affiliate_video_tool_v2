@@ -206,13 +206,49 @@ def test_animals_counting_apples_topic():
         assert ":" not in c.emoji
 
 
+def test_3d_kids_characters_assets():
+    """Verify that 3D Fluent kids character assets exist and load with RGBA transparency."""
+    from video.kids_education.animation import get_character_asset
+
+    for char in ["rabbit", "bear", "monkey", "cat", "dog", "apple", "party", "star", "sun", "rainbow"]:
+        asset = get_character_asset(char)
+        assert asset is not None, f"Asset for {char} should be available"
+        assert asset.mode == "RGBA"
+        assert asset.width >= 128 and asset.height >= 128
+
+
+def test_diverse_background_themes():
+    """Verify background theme selection includes 5 environments with rotation & keywords."""
+    from video.kids_education.animation import _detect_background_theme
+    from video.kids_education.presets import KidsCard
+
+    # Rotation across scene indices
+    card_normal = KidsCard(
+        title="Bé Học Chữ",
+        spoken_text="Hello",
+        image_prompt="cute letter",
+        emoji="⭐",
+    )
+    theme0 = _detect_background_theme(card_normal, scene_index=0)
+    theme1 = _detect_background_theme(card_normal, scene_index=1)
+    theme2 = _detect_background_theme(card_normal, scene_index=2)
+    assert theme0 == "sunny_meadow"
+    assert theme1 == "sunset_valley"
+    assert theme2 == "ocean_paradise"
+
+    # Keyword overrides
+    card_night = KidsCard(title="Bầu Trời Đêm", spoken_text="Stars", image_prompt="stars moon", emoji="🌙")
+    assert _detect_background_theme(card_night, scene_index=0) == "magical_night"
+
+    card_party = KidsCard(title="Tiệc Vui", spoken_text="Party", image_prompt="celebration party", emoji="🎉")
+    assert _detect_background_theme(card_party, scene_index=0) == "candy_carnival"
+
+
 def test_kids_animated_scene_motion(tmp_path):
     """Verify that make_kids_animated_scene_clip produces real animated video with changing frames.
-    Characters are drawn procedurally — each card type produces the matching kawaii animal.
+    Characters use high-res 3D assets and diverse scenic backgrounds.
     """
     from video.kids_education.animation import make_kids_animated_scene_clip, _detect_character_type
-
-    # 1. Character type detection
     from video.kids_education.presets import KidsCard
 
     rabbit_card = KidsCard(
@@ -255,8 +291,8 @@ def test_kids_animated_scene_motion(tmp_path):
     )
     assert _detect_character_type(party_card) == "party"
 
-    # 2. Animation clip generates motion frames without needing external image
-    clip = make_kids_animated_scene_clip(rabbit_card, duration=2.0)
+    # Animation clip generates motion frames with sunset_valley background
+    clip = make_kids_animated_scene_clip(rabbit_card, duration=2.0, scene_index=1)
     assert clip.duration == 2.0
 
     frame1 = clip.get_frame(0.2)

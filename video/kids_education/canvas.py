@@ -235,6 +235,14 @@ def create_flashcard_image(
     )
 
     rendered_center = False
+    if center_image is None:
+        try:
+            from video.kids_education.animation import _detect_character_type, get_character_asset
+            c_type = _detect_character_type(card)
+            center_image = get_character_asset(c_type)
+        except Exception:
+            center_image = None
+
     if center_image:
         try:
             # Preserve aspect ratio and respect alpha transparency

@@ -59,6 +59,7 @@ def render_kids_education_video(
         ImageClip,
         concatenate_videoclips,
     )
+    import moviepy.video.fx as vfx
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,14 +109,20 @@ def render_kids_education_video(
 
         total_audio_duration += duration
 
-        # 2. Living 2D/2.5D Animated Cartoon Scene (kawaii procedural character, rotating sun, drifting clouds, popping items, subtitles)
+        # 2. Living 2D/2.5D Animated Cartoon Scene (3D characters, scenic backgrounds, hopping physics, subtitles)
         try:
             clip = make_kids_animated_scene_clip(
                 card=card,
                 duration=duration,
                 width=540,
                 height=960,
+                scene_index=i,
             )
+            # Smooth cinematic scene transition
+            try:
+                clip = clip.with_effects([vfx.FadeIn(0.25), vfx.FadeOut(0.20)])
+            except Exception as fade_err:
+                logger.debug("Transition skipped on scene %d: %s", i, fade_err)
         except Exception as e:
             logger.warning("Animation failed on card %d (%s); falling back to static poster", i, e)
             clip = ImageClip(str(card_img_path)).with_duration(duration)
