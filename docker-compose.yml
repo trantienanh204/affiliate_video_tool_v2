@@ -9,6 +9,16 @@ services:
       - ./assets:/app/assets
       - ./workflows:/app/workflows
       - ./.env:/app/.env:ro
+      - ./app:/app/app
+      - ./ai:/app/ai
+      - ./video:/app/video
+      - ./models:/app/models
+      - ./services:/app/services
+      - ./core:/app/core
+      - ./tests:/app/tests
+      - ./utils:/app/utils
+      - ./tts:/app/tts
+      - ./run.py:/app/run.py
     environment:
       - AVA_RENDER_MODE=${AVA_RENDER_MODE:-gpu}
       - AVA_COMFYUI_ENABLED=${AVA_COMFYUI_ENABLED:-true}
