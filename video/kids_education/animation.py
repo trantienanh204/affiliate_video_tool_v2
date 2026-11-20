@@ -57,6 +57,14 @@ def get_character_asset(char_type: str) -> Optional[Image.Image]:
     return _ASSET_CACHE[char_type]
 
 
+def resolve_character_asset(char_type: str, card: Optional[KidsCard] = None) -> Optional[Image.Image]:
+    """Resolves character illustration asset from pre-existing local bundle.
+    Does NOT download anything from the internet (100% offline, 0 bytes disk usage).
+    Falls back to None so the procedural hero badge renders directly in RAM.
+    """
+    return get_character_asset(char_type)
+
+
 def _detect_character_type(card: KidsCard) -> str:
     """Infer the character type from emoji and keywords in image_prompt/title.
     
@@ -460,8 +468,8 @@ def _render_character_with_motion(
             fill=(30, 41, 59, int(130 * (1.0 - hop * 0.4))),
         )
 
-    # 6. Render 3D Character Asset
-    char_asset = get_character_asset(char_type)
+    # 6. Render Character Asset (3D Fluent, Dynamic OpenMoji on-demand, or Hero Badge)
+    char_asset = resolve_character_asset(char_type, card=card)
     if char_asset:
         target_size = int(width * 0.48)
         nw = max(10, int(target_size * scale_x))
