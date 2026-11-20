@@ -196,7 +196,12 @@ def process_kids_video(
     try:
         prog_cb(0.05, "Đang tạo nội dung thẻ học phong phú...")
         client = OllamaClient() if OllamaClient().is_available() else None
-        cards = generate_dynamic_kids_cards(preset_id=preset_id, custom_topic=custom_topic, client=client)
+        cards = generate_dynamic_kids_cards(
+            preset_id=preset_id,
+            custom_topic=custom_topic,
+            client=client,
+            voice_name=voice_name,
+        )
 
         card_md_lines = []
         for i, c in enumerate(cards):

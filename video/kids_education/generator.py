@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import random
+import re
 import urllib.parse
 from pathlib import Path
 from typing import Callable, Optional
@@ -23,37 +24,100 @@ logger = get_logger(__name__)
 ProgressCb = Optional[Callable[[float, str], None]]
 
 
+def _extract_cartoon_keyword(prompt: str, title: str) -> str:
+    """Extracts targeted keyword for public domain clipart / cartoon search."""
+    combined = f"{title} {prompt}".lower()
+    mapping = [
+        (["rabbit", "bunny", "thỏ"], "cartoon rabbit"),
+        (["apple", "táo"], "cartoon apple"),
+        (["bear", "gấu"], "cartoon bear"),
+        (["monkey", "khỉ"], "cartoon monkey"),
+        (["cat", "mèo", "kitten"], "cartoon cat"),
+        (["dog", "cún", "chó", "puppy"], "cartoon puppy"),
+        (["elephant", "voi"], "cartoon elephant"),
+        (["lion", "sư tử"], "cartoon lion"),
+        (["police", "cảnh sát"], "cartoon police car"),
+        (["fire truck", "cứu hoả", "cứu hỏa"], "cartoon fire truck"),
+        (["car", "xe", "ô tô"], "cartoon car"),
+        (["train", "tàu hỏa"], "cartoon train"),
+        (["rainbow", "cầu vồng"], "cartoon rainbow"),
+        (["sun", "mặt trời"], "cartoon smiling sun"),
+    ]
+    for words, target in mapping:
+        if any(w in combined for w in words):
+            return target
+    clean = re.sub(r"[^a-zA-Z0-9 ]", " ", prompt).split()
+    return f"cartoon {clean[0]}" if clean else "cartoon character"
+
+
+def _fetch_wikimedia_cartoon(keyword: str) -> Optional[Image.Image]:
+    """Fetches a free, high-resolution public domain cartoon illustration from Wikimedia Commons."""
+    headers = {
+        "User-Agent": "KidsEducationVideoBot/1.0 (https://github.com/kidsapp; contact@example.com)"
+    }
+    params = {
+        "action": "query",
+        "generator": "search",
+        "gsrsearch": f"{keyword} filetype:bitmap|drawing",
+        "gsrnamespace": 6,
+        "prop": "imageinfo",
+        "iiprop": "url",
+        "iiurlwidth": 600,
+        "format": "json",
+        "gsrlimit": 4,
+    }
+    try:
+        with httpx.Client(timeout=7.0, headers=headers, follow_redirects=True) as client:
+            resp = client.get("https://commons.wikimedia.org/w/api.php", params=params)
+            if resp.status_code == 200:
+                pages = resp.json().get("query", {}).get("pages", {})
+                for pid, val in pages.items():
+                    thumb = val.get("imageinfo", [{}])[0].get("thumburl")
+                    if thumb:
+                        img_resp = client.get(thumb)
+                        if img_resp.status_code == 200 and len(img_resp.content) > 5000:
+                            img = Image.open(io.BytesIO(img_resp.content))
+                            logger.info("Found Wikimedia cartoon for '%s' (%d bytes, %s)", keyword, len(img_resp.content), img.size)
+                            return img
+    except Exception as e:
+        logger.warning("Wikimedia search failed for '%s': %s", keyword, e)
+    return None
+
+
+def _fetch_pollinations_ai(prompt: str) -> Optional[Image.Image]:
+    """Attempts fast AI generation from Pollinations (0đ, short timeout)."""
+    seed = random.randint(1000, 999999)
+    prompt_full = f"{prompt}, vibrant cartoon clipart, 3d pixar disney style, cute, white background"
+    prompt_enc = urllib.parse.quote(prompt_full)
+    url = f"https://image.pollinations.ai/prompt/{prompt_enc}?width=512&height=512&nologo=true&seed={seed}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
+    try:
+        with httpx.Client(timeout=4.5, headers=headers, follow_redirects=True) as client:
+            resp = client.get(url)
+            if resp.status_code == 200 and len(resp.content) > 1000:
+                return Image.open(io.BytesIO(resp.content))
+    except Exception as e:
+        logger.debug("Pollinations AI skipped (%s)", e)
+    return None
+
+
 def download_or_generate_card_image(card: KidsCard, output_path: Path) -> Path:
     """
-    Attempts to download a friendly AI cartoon illustration from Pollinations (0đ).
-    Uses randomized seeds, high-res prompts, and user-agent headers.
-    Gracefully falls back to procedural cartoon canvas if offline or on network failure.
+    Acquires a relevant, kid-friendly cartoon illustration via:
+    1. Wikimedia Commons public domain cartoon clipart (free, instant, 0đ, no rate limit)
+    2. Fast Pollinations AI attempt (short timeout)
+    3. High-resolution procedural kawaii illustration in canvas.py (offline, guaranteed zero-fail)
     """
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    center_img: Image.Image | None = None
-    seed = random.randint(1000, 999999)
-    prompt_full = f"{card.image_prompt}, vibrant cartoon, 3d pixar disney style, cute characters, high quality, soft studio lighting"
-    prompt_enc = urllib.parse.quote(prompt_full)
-    url = f"https://image.pollinations.ai/prompt/{prompt_enc}?width=768&height=768&nologo=true&seed={seed}"
+    keyword = _extract_cartoon_keyword(card.image_prompt, card.title)
+    center_img = _fetch_wikimedia_cartoon(keyword)
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    }
-
-    try:
-        logger.info("Attempting AI image download for %s (seed=%d)", card.title, seed)
-        with httpx.Client(timeout=14.0, headers=headers, follow_redirects=True) as client:
-            resp = client.get(url)
-            if resp.status_code == 200 and len(resp.content) > 1000:
-                center_img = Image.open(io.BytesIO(resp.content))
-                logger.info("Downloaded AI illustration for %s (%d bytes)", card.title, len(resp.content))
-            else:
-                logger.warning("AI image response %s, falling back to canvas", resp.status_code)
-    except Exception as e:
-        logger.warning("Online image generation timed out or failed for %s (%s); using procedural canvas", card.title, e)
-        center_img = None
+    if center_img is None:
+        center_img = _fetch_pollinations_ai(card.image_prompt)
 
     return create_flashcard_image(card, output_path, center_image=center_img)
 
@@ -156,7 +220,6 @@ def render_kids_education_video(
     if bgm_path.is_file():
         try:
             raw_bgm = AudioFileClip(str(bgm_path))
-            # Loop BGM to match video duration
             loops_needed = int(final_video.duration / raw_bgm.duration) + 1
             loop_list = [raw_bgm] * loops_needed
             from moviepy import concatenate_audioclips

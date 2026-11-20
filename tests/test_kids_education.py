@@ -136,3 +136,74 @@ def test_kids_bgm_asset():
     assert bgm.stat().st_size > 100000
 
 
+def test_emoji_sanitization():
+    """Verify Slack-style :emoji: codes are cleanly converted to true Unicode."""
+    from video.kids_education.canvas import sanitize_emoji
+    assert sanitize_emoji(":frog:") == "🐸"
+    assert sanitize_emoji(":cat_face:") == "🐱"
+    assert sanitize_emoji(":apple:") == "🍎"
+    assert sanitize_emoji(":rabbit:") == "🐰"
+    assert sanitize_emoji(":bear:") == "🐻"
+    assert sanitize_emoji("⭐") == "⭐"
+    # Unmapped colon code should not output raw code string
+    res = sanitize_emoji(":unknown_code_foo:")
+    assert ":" not in res
+
+
+def test_title_auto_fit_no_overflow(tmp_path):
+    """Verify long titles scale down and never overflow the card bounds."""
+    from PIL import Image, ImageDraw
+    from video.kids_education.canvas import _fit_text, create_flashcard_image
+
+    img = Image.new("RGB", (1080, 1920), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    long_title = "4 Quả Táo - Four Apples - Bé Vui Học Đếm Cùng Muông Thú"
+    font, bbox = _fit_text(draw, long_title, max_width=880, initial_size=90, min_size=20, bold=True)
+    w = bbox[2] - bbox[0]
+    assert w <= 880
+
+    card = KidsCard(
+        title=long_title,
+        subtitle="Subtitle that is also quite long and should be wrapped automatically by textwrap",
+        spoken_text="Hello apples",
+        image_prompt="cute cartoon apple",
+        emoji=":frog:",  # Test that :frog: is sanitized
+        theme_color="#FF6B6B",
+    )
+    out_file = tmp_path / "long_card.png"
+    result = create_flashcard_image(card, out_file)
+    assert result.is_file()
+    assert result.stat().st_size > 20000
+
+
+def test_animals_counting_apples_topic():
+    """Verify the user topic 'các con thú học đếm táo' generates matching animal & apple counting cards."""
+    from video.kids_education.dynamic_generator import generate_dynamic_kids_cards
+
+    # Vietnamese voice
+    cards_vi = generate_dynamic_kids_cards(
+        custom_topic="các con thú học đếm táo",
+        voice_name="vi-VN-HoaiMyNeural",
+    )
+    assert len(cards_vi) == 4
+    assert any("Thỏ" in c.title or "1 Quả Táo" in c.title for c in cards_vi)
+    assert any("Gấu" in c.title or "2 Quả Táo" in c.title for c in cards_vi)
+    assert any("Khỉ" in c.title or "3 Quả Táo" in c.title for c in cards_vi)
+    assert any("4 Quả Táo" in c.title or "Four Apples" in c.title for c in cards_vi)
+    for c in cards_vi:
+        assert ":" not in c.emoji  # No slack format emojis
+
+    # English voice (Ana US)
+    cards_en = generate_dynamic_kids_cards(
+        custom_topic="các con thú học đếm táo",
+        voice_name="en-US-AnaNeural",
+    )
+    assert len(cards_en) == 4
+    # Spoken text should be in joyful English
+    assert any("apple" in c.spoken_text.lower() for c in cards_en)
+    assert any("bunny" in c.spoken_text.lower() or "bear" in c.spoken_text.lower() for c in cards_en)
+    for c in cards_en:
+        assert ":" not in c.emoji
+
+
+
