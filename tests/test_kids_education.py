@@ -307,5 +307,49 @@ def test_kids_animated_scene_motion(tmp_path):
     assert out_mp4.stat().st_size > 10000
 
 
+def test_household_items_topic_parsing():
+    """Verify that a comma-separated list like 'tủ lạnh,cái tủ,cái quạt,cái nồi'
+    produces 4 distinct cards matching each item, without mangling or repeating.
+    """
+    from video.kids_education.dynamic_generator import generate_dynamic_kids_cards
+    from video.kids_education.animation import _detect_character_type
+
+    cards_en = generate_dynamic_kids_cards(
+        custom_topic="tủ lạnh,cái tủ,cái quạt,cái nồi",
+        voice_name="Nữ phát âm tiếng Anh chuẩn (Jenny US)",
+    )
+    assert len(cards_en) == 4
+
+    # Card 1: Refrigerator
+    assert "Tủ Lạnh" in cards_en[0].title or "Refrigerator" in cards_en[0].title
+    assert "refrigerator" in cards_en[0].spoken_text.lower() or "fridge" in cards_en[0].spoken_text.lower()
+    assert _detect_character_type(cards_en[0]) == "snowflake"
+
+    # Card 2: Wardrobe
+    assert "Cái Tủ" in cards_en[1].title or "Wardrobe" in cards_en[1].title
+    assert "wardrobe" in cards_en[1].spoken_text.lower() or "closet" in cards_en[1].spoken_text.lower()
+    assert _detect_character_type(cards_en[1]) == "door"
+
+    # Card 3: Fan
+    assert "Cái Quạt" in cards_en[2].title or "Fan" in cards_en[2].title
+    assert "fan" in cards_en[2].spoken_text.lower()
+    assert _detect_character_type(cards_en[2]) == "wind"
+
+    # Card 4: Pot
+    assert "Cái Nồi" in cards_en[3].title or "Pot" in cards_en[3].title
+    assert "pot" in cards_en[3].spoken_text.lower()
+    assert _detect_character_type(cards_en[3]) == "pot"
+
+    # Check Vietnamese voice generates proper Vietnamese instruction
+    cards_vi = generate_dynamic_kids_cards(
+        custom_topic="tủ lạnh,cái tủ,cái quạt,cái nồi",
+        voice_name="vi-VN-HoaiMyNeural",
+    )
+    assert len(cards_vi) == 4
+    assert "Tủ Lạnh" in cards_vi[0].spoken_text
+    assert "Cái Quạt" in cards_vi[2].spoken_text
+
+
+
 
 

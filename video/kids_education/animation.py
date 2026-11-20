@@ -87,6 +87,30 @@ def _detect_character_type(card: KidsCard) -> str:
         return "elephant"
     if "🍎" in emoji:
         return "apple"
+    if "❄️" in emoji:
+        return "snowflake"
+    if "🚪" in emoji:
+        return "door"
+    if "🌀" in emoji:
+        return "wind"
+    if "🍲" in emoji:
+        return "pot"
+    if "✈️" in emoji:
+        return "airplane"
+    if "🚂" in emoji:
+        return "train"
+    if "🚌" in emoji:
+        return "bus"
+    if "🚲" in emoji:
+        return "bicycle"
+    if "🎂" in emoji:
+        return "cake"
+    if "🍦" in emoji:
+        return "icecream"
+    if "🍕" in emoji:
+        return "pizza"
+    if "🍓" in emoji:
+        return "strawberry"
     if any(e in emoji for e in ("🎉", "🎊")):
         return "party"
     if "⭐" in emoji or "🌟" in emoji:
@@ -145,6 +169,30 @@ def _detect_character_type(card: KidsCard) -> str:
         return "rainbow"
     if any(k in combined for k in ("sách", "book", "học")):
         return "books"
+    if any(k in combined for k in ("tủ lạnh", "refrigerator", "fridge", "tuyết", "snowflake", "lạnh")):
+        return "snowflake"
+    if any(k in combined for k in ("cái tủ", "wardrobe", "closet", "cửa", "door")):
+        return "door"
+    if any(k in combined for k in ("cái quạt", "quạt", "electric fan", "fan", "gió", "wind", "cyclone")):
+        return "wind"
+    if any(k in combined for k in ("cái nồi", "nồi", "cooking pot", "pot", "canh", "soup")):
+        return "pot"
+    if any(k in combined for k in ("máy bay", "airplane", "plane")):
+        return "airplane"
+    if any(k in combined for k in ("tàu hỏa", "xe lửa", "train")):
+        return "train"
+    if any(k in combined for k in ("xe buýt", "xe bus", "bus")):
+        return "bus"
+    if any(k in combined for k in ("xe đạp", "bicycle", "bike")):
+        return "bicycle"
+    if any(k in combined for k in ("bánh kem", "bánh ngọt", "cake")):
+        return "cake"
+    if any(k in combined for k in ("cây kem", "kem", "ice cream", "icecream")):
+        return "icecream"
+    if any(k in combined for k in ("pizza",)):
+        return "pizza"
+    if any(k in combined for k in ("dâu tây", "dâu", "strawberry")):
+        return "strawberry"
     if any(k in combined for k in ("chuối", "banana")):
         return "banana"
     if any(k in combined for k in ("táo", "apple")):
@@ -374,6 +422,7 @@ def _render_character_with_motion(
     t: float,
     duration: float,
     theme_rgb: tuple[int, int, int],
+    card: Optional[KidsCard] = None,
 ) -> None:
     """Composites the high-resolution 3D character with rhythmic hop, tilt, squash & stretch, and pop-in entrance."""
     # 1. Entrance Pop-In (Elastic spring entrance in first 0.35s)
@@ -424,13 +473,17 @@ def _render_character_with_motion(
         py = char_y - rotated.height // 2
         img.paste(rotated, (px, py), mask=rotated)
     else:
-        # Fallback procedural friendly circular character badge
-        c_r = int(width * 0.20 * pop_scale)
+        # Fallback procedural friendly circular hero badge showing card emoji
+        c_r = int(width * 0.22 * pop_scale)
         c_cx = width // 2
+        # Outer soft glow
+        draw.ellipse([(c_cx - c_r - 8, char_y - c_r - 8), (c_cx + c_r + 8, char_y + c_r + 8)], fill=(255, 255, 255, 140))
+        # Theme circular container
         draw.ellipse([(c_cx - c_r, char_y - c_r), (c_cx + c_r, char_y + c_r)], fill=theme_rgb)
         draw.ellipse([(c_cx - c_r + 6, char_y - c_r + 6), (c_cx + c_r - 6, char_y + c_r - 6)], outline=(255, 255, 255), width=4)
-        star_font = _get_font(int(c_r * 0.9), bold=True)
-        draw.text((c_cx, char_y), "⭐", font=star_font, fill=(255, 255, 255), anchor="mm")
+        hero_emoji = sanitize_emoji(card.emoji) if card else "⭐"
+        emoji_font = _get_font(int(c_r * 1.05), bold=True)
+        draw.text((c_cx, char_y), hero_emoji, font=emoji_font, fill=(255, 255, 255), anchor="mm")
 
 
 def _render_counting_props(
@@ -441,14 +494,25 @@ def _render_counting_props(
     card: KidsCard,
     t: float,
 ) -> None:
-    """Animates 3D counting items (e.g. shiny red apples) popping in sequentially."""
+    """Animates 3D counting items (e.g. shiny red apples) popping in sequentially.
+    
+    CRITICAL: Only activates when the card is explicitly an apple-counting lesson.
+    Prevents random apples from ever appearing on household items, animals or other vocabulary.
+    """
     full_info = f"{card.title} {card.subtitle}".lower()
-    is_apple_theme = any(k in full_info for k in ("táo", "apple", "quả"))
-    count_match = re.search(r"\b([1-5])\b", card.title)
-    count = int(count_match.group(1)) if count_match else (1 if is_apple_theme else 0)
-
-    if count <= 0:
+    # Must be explicitly an apple counting lesson
+    is_counting_lesson = (
+        any(k in full_info for k in ("đếm táo", "học đếm", "counting apples", "count apples", "đếm số"))
+        or bool(re.search(r"\b[1-5]\s*(?:apples|apple|quả táo|táo)\b", full_info))
+    )
+    if not is_counting_lesson:
         return
+
+    # Extract genuine count (1 to 5) attached to apple counting
+    count_match = re.search(r"\b([1-5])\s*(?:apples|apple|quả táo|táo)\b", full_info)
+    if not count_match:
+        count_match = re.search(r"^([1-5])\b", card.title.strip())
+    count = int(count_match.group(1)) if count_match else 1
 
     apple_asset = get_character_asset("apple")
     apple_y_base = int(height * 0.58)
@@ -664,7 +728,7 @@ def render_animated_kids_frame(
         _render_sunny_meadow(img, draw, width, height, t)
 
     # 2. Compositing 3D Character with Physics & Animation
-    _render_character_with_motion(img, draw, width, height, char_type, t, duration, theme_rgb)
+    _render_character_with_motion(img, draw, width, height, char_type, t, duration, theme_rgb, card=card)
 
     # 3. Compositing Counting Props (if applicable)
     _render_counting_props(img, draw, width, height, card, t)

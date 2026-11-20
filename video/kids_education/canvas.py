@@ -283,13 +283,13 @@ def create_flashcard_image(
         hill_top = inner_y + int(inner_h * 0.72)
         draw.ellipse([(inner_x - 50, hill_top), (inner_x + inner_w + 50, inner_y + inner_h + 80)], fill=(134, 239, 172))
 
-        # Detect theme: apple / fruit counting vs general
+        # Detect theme: apple counting vs general
         full_text = f"{card.title} {card.subtitle} {card.spoken_text}".lower()
-        is_apple_theme = any(k in full_text for k in ("táo", "apple", "trái cây", "quả"))
+        is_apple_theme = any(k in full_text for k in ("táo", "apple")) and not any(k in full_text for k in ("quạt", "fan", "nồi", "pot"))
         
         # Detect count
-        count_match = re.search(r"\b([1-5])\b", card.title)
-        count = int(count_match.group(1)) if count_match else 1
+        count_match = re.search(r"\b([1-5])\s*(?:quả táo|táo|apples|apple)\b", full_text)
+        count = int(count_match.group(1)) if count_match else (1 if is_apple_theme else 0)
 
         if is_apple_theme:
             # Draw cute kawaii apples corresponding to count!
