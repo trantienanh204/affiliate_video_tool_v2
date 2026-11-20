@@ -114,10 +114,16 @@ def get_instant_template_story(inp: FastStoryInput) -> FastStoryResult:
             f"Cô mỉm cười đón nhận ánh nắng ban mai, sẵn sàng cho những chương mới rực rỡ phía trước."
         )
 
+    p2_extra = (
+        f"Trong bóng tối của những âm mưu toan tính, {name} từng bước gỡ bỏ từng cạm bẫy đối phương giăng ra. "
+        f"Mỗi người tưởng chừng thân cận đều lần lượt lộ rõ tâm cơ thực sự. "
+        f"Nhưng thay vì hoang mang, {name} biến từng trở ngại thành đòn bẩy chiến lược để xoay chuyển cục diện."
+    )
+
     if inp.length == StoryLength.SHORT:
         content = f"{p1}\n\n{p3}"
     elif inp.length == StoryLength.LONG:
-        content = f"{p1}\n\n{p2}\n\n{p2}\n\n{p3}"
+        content = f"{p1}\n\n{p2}\n\n{p2_extra}\n\n{p3}"
     else:
         content = f"{p1}\n\n{p2}\n\n{p3}"
 

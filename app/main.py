@@ -327,8 +327,8 @@ def refresh_history():
 
 
 def do_clear_history():
-    n = clear_history()
-    return [], f"Đã xóa {n} bản ghi."
+    clear_history()
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -372,7 +372,7 @@ def create_app() -> gr.Blocks:
             with gr.Tab("📜 Lịch Sử & Quản Lý"):
                 hist = build_history_tab()
                 hist["refresh_btn"].click(fn=refresh_history, outputs=hist["history_table"])
-                hist["clear_btn"].click(fn=do_clear_history, outputs=[hist["history_table"], gr.Textbox(visible=False)])
+                hist["clear_btn"].click(fn=do_clear_history, outputs=hist["history_table"])
                 demo.load(fn=refresh_history, outputs=hist["history_table"])
 
         gr.Markdown(
