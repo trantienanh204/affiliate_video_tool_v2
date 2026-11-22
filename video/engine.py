@@ -1,28 +1,38 @@
 """
 Video engine orchestrator.
 
-CPU path: storyboard → Ken Burns scenes → compositor → MP4
-GPU path: storyboard → ComfyUI I2V per scene → compositor (fallback Ken Burns)
+CPU path: storyboard -> Ken Burns scenes -> compositor -> MP4
+GPU path: storyboard -> ComfyUI I2V per scene -> compositor (fallback Ken Burns)
+AI fallback: per-scene provider (HF ZeroGPU / fal.ai / ComfyUI) -> 4-6 clips
+             -> compose_ai_scene_clips -> MP4 + audio
+
+PO acceptance (AC1/AC3):
+- AI video path now emits 4-6 AI clips per product (one per storyboard scene),
+  each clip keeps the same product identity, no clip is a raw repeat of clip 0.
+- Final video length is clamped to [30s, 45s] (user override via ProductInput.duration).
 """
 
 from __future__ import annotations
 
+import math
+import os
+import time
 from pathlib import Path
 from typing import Callable, Optional
-import os
 
-from core.config import settings, RenderMode
-from core.exceptions import ComfyUIError, ProductValidationError, VideoRenderError
+from core.config import settings
+from core.exceptions import ProductValidationError, VideoRenderError
 from core.logging import get_logger
 from models.job import JobResult
+from models.script import ScriptPackage
 from models.product import ProductInput
-from models.storyboard import Scene, Storyboard
+from models.storyboard import Storyboard
 
 from ai.llm.analyzer import analyze_and_script
 from ai.storyboard.generator import generate_storyboard
 from tts.edge import generate_tts
 from utils.paths import job_output_dir
-from video.compositor import compose_video
+from video.compositor import compose_video, compose_ai_scene_clips
 
 logger = get_logger(__name__)
 
@@ -38,183 +48,109 @@ def _progress(cb: ProgressCb, value: float, stage: str) -> None:
     logger.info("Progress %.0f%% | %s", value * 100, stage)
 
 
-def _character_video_prompt(product: ProductInput, scene_prompt: str) -> tuple[str, str]:
-    """Prompt a fictional animated presenter to demonstrate the referenced item."""
-    apparel = product.category.strip().casefold() in {"áo", "quần", "thời trang", "quần áo", "đồ mặc"}
-    context = (product.description or product.image_description or "").strip()[:220]
-    if apparel:
-        positive = (
-            "Create a polished, pleasant stylized 3D animated fashion commercial, clearly animated and fictional, "
-            "not a real identifiable person. Show one adult character wearing the garment in the reference image. "
-            "Keep its visible garment design faithful: same dominant color, neckline, sleeve length, fit and plain/printed pattern; "
-            "do not invent logos, words, graphics, seams or accessories on the shirt. The character makes a natural small turn, "
-            "takes one relaxed step and smiles; subtle hair and fabric movement, hands stay away from the shirt. "
-            "Warm modern boutique or bright lifestyle setting, tasteful colors, soft cinematic light, medium full-body framing "
-            "with the shirt always clearly visible. Smooth character animation and gentle scene motion; no zoom-only animation, "
-            "no camera shake. No on-screen copy, captions, signs, watermark or UI. "
-        )
-    else:
-        positive = (
-            "Create a polished, pleasant stylized 3D animated product commercial with one clearly fictional adult presenter. "
-            "The presenter naturally demonstrates or wears the product from the reference; preserve its visible design, color, "
-            "shape and markings without adding text or logos. Use a tasteful lifestyle setting, soft cinematic light, "
-            "natural small gestures and smooth character animation; no zoom-only animation or camera shake. "
-            "No on-screen copy, captions, signs, watermark or UI. "
-        )
-    positive += f"Product context: {context or product.name}. Scene idea: {scene_prompt[:160]}"
-    negative = (
-        "photorealistic real person, text, captions, subtitles, watermark, brand logo, extra lettering, UI, "
-        "changed shirt color, changed neckline, changed sleeves, changed pattern, added print, melted fabric, "
-        "deformed body, extra fingers, fused hands, bad anatomy, camera zoom, camera shake, blurry"
-    )
-    return positive, negative
+def _target_scene_count(storyboard: Storyboard) -> int:
+    """Number of AI clips to generate for a storyboard.
+
+    PO acceptance: 4-6 AI clips per affiliate video. Storyboard already
+    produces 4 scenes (<=25s), 5 scenes (<=40s), 6 scenes (>40s); we cap at
+    i2v_max_scenes and never produce fewer than 4 clips for a valid storyboard.
+    """
+    n = len(storyboard.scenes)
+    if n == 0:
+        return 0
+    max_clips = max(1, settings.i2v_max_scenes)
+    if n >= 4:
+        return max(4, min(n, max_clips))
+    return n
 
 
-def _try_gpu_scenes(
-    storyboard: Storyboard,
-    image_paths: list[Path],
+
+
+def _render_one_scene(
+    provider: str,
+    image_path: Path,
+    prompt: str,
+    scene: object,
     job_id: str,
     progress_callback: ProgressCb,
     product: ProductInput,
-) -> list[Path] | None:
-    """
-    Attempt ComfyUI I2V for each scene.
+) -> Path:
+    """Dispatch a single scene to the chosen AI video backend."""
+    if provider == "hf_zerogpu":
+        from services.hf_video import render_image_to_video
 
-    Returns I2V scene clips. In required mode, unavailable I2V raises an error.
-    """
-    if not settings.comfyui_enabled and settings.render_mode != RenderMode.GPU:
-        if settings.require_ai_video:
-            raise ComfyUIError("AI video chưa bật. Đặt AVA_RENDER_MODE=gpu và AVA_COMFYUI_ENABLED=true, sau đó khởi động ComfyUI.")
-        return None
+        return render_image_to_video(
+            image_path, prompt, job_id=job_id, progress_callback=progress_callback
+        )
+    if provider == "fal":
+        from services.fal_video import render_image_to_video
 
-    try:
-        from services.comfyui.client import get_comfyui_client
+        return render_image_to_video(
+            image_path, prompt, job_id=job_id, progress_callback=progress_callback
+        )
+    if provider == "comfyui":
         from services.comfyui.i2v import render_scene_i2v
-    except ImportError as e:
-        logger.warning("ComfyUI module import failed: %s", e)
-        if settings.require_ai_video:
-            raise ComfyUIError(f"Không nạp được module ComfyUI: {e}") from e
-        return None
 
-    client = get_comfyui_client()
-    if not client.is_available():
-        logger.warning("ComfyUI không truy cập được")
-        if settings.require_ai_video:
-            raise ComfyUIError(f"Không kết nối được ComfyUI tại {settings.comfyui_url}. Hãy khởi động ComfyUI.")
-        return None
+        duration = min(getattr(scene, "duration", 3.0), settings.i2v_scene_duration)
+        return render_scene_i2v(image_path, prompt, duration=duration, job_id=job_id)
 
-    if not image_paths:
-        logger.warning("Không có ảnh cho I2V")
-        if settings.require_ai_video:
-            raise ComfyUIError("AI video cần ít nhất một ảnh sản phẩm.")
-        return None
-
-    scene_videos: list[Path] = []
-    selected_scenes = storyboard.scenes[:max(1, settings.i2v_max_scenes)]
-    n = max(1, len(selected_scenes))
-
-    for i, scene in enumerate(selected_scenes):
-        frac = 0.55 + 0.30 * (i / n)
-        _progress(
-            progress_callback,
-            frac,
-            f"GPU I2V scene {i+1}/{n} ({scene.role})...",
-        )
-        img = image_paths[scene.image_index % len(image_paths)]
-        prompt, negative = _character_video_prompt(product, scene.i2v_prompt or scene.description)
-        try:
-            clip_path = render_scene_i2v(
-                img,
-                prompt,
-                negative_prompt=negative,
-                duration=min(scene.duration, settings.i2v_scene_duration),
-                job_id=job_id,
-                client=client,
-            )
-            scene_videos.append(clip_path)
-        except ComfyUIError as e:
-            logger.warning("I2V scene %s failed (%s)", scene.scene_id, e.message)
-            if settings.require_ai_video:
-                raise
-            return None
-
-    return scene_videos
+    raise VideoRenderError(f"Nhà cung cấp video không hợp lệ: {provider}")
 
 
-def _try_fal_scene(
-    storyboard: Storyboard,
-    image_paths: list[Path],
-    job_id: str,
-    progress_callback: ProgressCb,
-    product: ProductInput,
-) -> list[Path]:
-    """Generate one cloud I2V clip to keep cost and generation time bounded."""
-    if not image_paths:
-        raise VideoRenderError("AI video cần ít nhất một ảnh sản phẩm.")
-    if not storyboard.scenes:
-        raise VideoRenderError("Storyboard không có cảnh để tạo video.")
-    from services.fal_video import render_image_to_video
-
-    scene = storyboard.scenes[0]
-    image_path = image_paths[scene.image_index % len(image_paths)]
-    _progress(progress_callback, 0.56, "Gửi ảnh và prompt đến dịch vụ AI video...")
-    prompt, negative_prompt = _character_video_prompt(product, scene.i2v_prompt or scene.description)
-    clip = render_image_to_video(
-        image_path,
-        prompt,
-        negative_prompt=negative_prompt,
-        job_id=job_id,
-        progress_callback=progress_callback,
-    )
-    return [clip]
-
-
-def _try_hf_zero_scene(
-    storyboard: Storyboard,
-    image_paths: list[Path],
-    job_id: str,
-    progress_callback: ProgressCb,
-    product: ProductInput,
-) -> list[Path]:
-    """Generate one short product clip using Hugging Face's shared ZeroGPU quota."""
-    if not image_paths:
-        raise VideoRenderError("AI video cần ít nhất một ảnh sản phẩm.")
-    if not storyboard.scenes:
-        raise VideoRenderError("Storyboard không có cảnh để tạo video.")
-    from services.hf_video import render_image_to_video
-
-    scene = storyboard.scenes[0]
-    image_path = image_paths[scene.image_index % len(image_paths)]
-    prompt, negative_prompt = _character_video_prompt(product, scene.i2v_prompt or scene.description)
-    clip = render_image_to_video(
-        image_path,
-        prompt,
-        negative_prompt=negative_prompt,
-        job_id=job_id,
-        progress_callback=progress_callback,
-    )
-    return [clip]
-
-
-def _run_video_provider(
+def _render_provider_scenes(
     provider: str,
     storyboard: Storyboard,
-    image_paths: list[Path],
+    image_sources: list[Path],
     job_id: str,
     progress_callback: ProgressCb,
     product: ProductInput,
-) -> list[Path]:
-    """Dispatch one configured provider, keeping provider errors for failover."""
-    if provider == "hf_zerogpu":
-        return _try_hf_zero_scene(storyboard, image_paths, job_id, progress_callback, product)
-    if provider == "fal":
-        return _try_fal_scene(storyboard, image_paths, job_id, progress_callback, product)
-    if provider == "comfyui":
-        clips = _try_gpu_scenes(storyboard, image_paths, job_id, progress_callback, product)
-        if not clips:
-            raise VideoRenderError("ComfyUI không tạo được cảnh AI.")
-        return clips
-    raise VideoRenderError(f"Nhà cung cấp video không hợp lệ: {provider}")
+    n: int,
+    failures: list[str],
+):
+    """Generate up to n AI clips, one per storyboard scene.
+
+    Policy:
+      - require_ai_video_active (GPU mode / explicit): any scene failure ->
+        the whole provider fails; engine moves to the next provider.
+      - Normal CPU mode: a failed scene is skipped and the remaining scenes
+        are still composited (best-effort), because the UI always falls back
+        to Ken Burns instead of showing a black screen.
+    """
+    if not image_sources:
+        raise VideoRenderError("AI video cần ít nhất một ảnh sản phẩm để tạo chuyển động.")
+
+    scenes = storyboard.scenes[:n]
+    clips: list[Path] = []
+    scene_failed: list[str] = []
+    required = settings.require_ai_video_active
+
+    for scene in scenes:
+        try:
+            img = image_sources[scene.image_index % len(image_sources)]
+            prompt = (getattr(scene, "i2v_prompt", "") or "").strip()
+            if not prompt:
+                msg = f"Cảnh {getattr(scene, 'scene_id', '?')}: prompt trống, bỏ qua"
+                logger.warning(msg)
+                scene_failed.append(msg)
+                if required:
+                    raise VideoRenderError(msg)
+                continue
+            clip = _render_one_with_retry(
+                provider, img, prompt, scene, job_id, progress_callback, product
+            )
+            clips.append(clip)
+            if progress_callback:
+                frac = 0.48 + 0.02 * (len(clips) / max(1, n))
+                _progress(progress_callback, frac, f"Đang tạo ảnh AI cảnh {len(clips)}/{n}...")
+        except Exception as exc:  # noqa: BLE001
+            msg = f"Cảnh {getattr(scene, 'scene_id', '?')}: {getattr(exc, 'message', str(exc))[:200]}"
+            logger.warning(msg)
+            scene_failed.append(msg)
+            if required:
+                raise
+    if clips:
+        return clips, scene_failed
+    return [], scene_failed
 
 
 def _generate_video_with_fallbacks(
@@ -226,7 +162,12 @@ def _generate_video_with_fallbacks(
     *,
     hf_token_invalid: bool = False,
 ) -> tuple[list[Path] | None, str, list[str]]:
-    """Try the primary video backend, then explicitly configured alternatives."""
+    """Try the primary AI backend, then the configured alternatives.
+
+    Unlike the previous version (which rendered a single clip and looped it),
+    this now renders one clip per storyboard scene: 4-6 clips, each generated
+    from the scene's own prompt and image index.
+    """
     configured = [settings.video_provider]
     configured.extend(
         name.strip().lower()
@@ -235,6 +176,12 @@ def _generate_video_with_fallbacks(
     )
     providers = list(dict.fromkeys(configured))
     failures: list[str] = []
+
+    # Decide which image the AI clips animate.
+    #  - HF keyframe (stylized cartoon character) -> the SAME character is reused
+    #    across all scenes (consistent presenter), product identity stays in the
+    #    prompt so every clip shows the product.
+    #  - Otherwise -> the user's product photo is animated directly.
     video_images = image_paths
     keyframe_ready = not settings.hf_character_enabled or not image_paths
     if settings.hf_character_enabled and image_paths and not hf_token_invalid:
@@ -256,9 +203,13 @@ def _generate_video_with_fallbacks(
             logger.warning("Stylized keyframe unavailable; continue with original product image: %s", message)
             failures.append(f"Qwen keyframe: {message[:180]}")
 
+    n = _target_scene_count(storyboard)
+    if n == 0:
+        return None, "", failures
+
     for provider in providers:
         if provider == "cpu":
-            continue  # AI-video-required mode must never degrade to photo zoom.
+            continue
         if provider == "hf_zerogpu" and hf_token_invalid:
             failures.append("hf_zerogpu: HF_TOKEN không hợp lệ; đã bỏ qua từ bước kiểm tra sớm")
             continue
@@ -267,73 +218,140 @@ def _generate_video_with_fallbacks(
             continue
         if provider == "fal":
             fal_key = os.getenv("FAL_KEY", "").strip()
-            # Avoid accidentally treating an HF token pasted into FAL_KEY as
-            # valid; that only causes a slow, confusing auth failure.
+            # HF token pasted into FAL_KEY only causes a slow, confusing auth
+            # failure; never mistake it for a valid fal.ai key.
             if not fal_key or fal_key.lower().startswith("hf_"):
                 failures.append(
                     "fal.ai: chưa có FAL_KEY fal.ai hợp lệ. HF_TOKEN (key Hugging Face) "
                     "không dùng được cho fal.ai; backend fal.ai có thể tính phí"
                 )
                 continue
-        _progress(progress_callback, 0.48, f"Đang thử AI video: {provider}...")
+
+        _progress(progress_callback, 0.45, f"Đang thử AI video (4-6 cảnh): {provider}...")
         try:
-            return _run_video_provider(provider, storyboard, video_images, job_id, progress_callback, product), provider, failures
+            scene_videos, scene_failures = _render_provider_scenes(
+                provider,
+                storyboard,
+                video_images,
+                job_id,
+                progress_callback,
+                product,
+                n,
+                failures,
+            )
+            if scene_videos:
+                return scene_videos, provider, failures
+            failures.extend(scene_failures)
         except Exception as exc:
             message = getattr(exc, "message", str(exc))
-            logger.warning("Video provider %s failed; trying next configured fallback: %s", provider, message)
+            logger.warning("AI video provider %s failed: %s", provider, message)
             failures.append(f"{provider}: {message[:240]}")
+
     return None, "", failures
 
 
-def _compose_from_scene_videos(
+def _compose_ai_scene_clips(
     scene_videos: list[Path],
     storyboard: Storyboard,
     audio_path: Path,
     output_path: Path,
     *,
-    provider: str | None = None,
+    provider: Optional[str] = None,
+    target_duration: Optional[float] = None,
 ) -> Path:
-    """Concatenate pre-rendered scene videos + audio (GPU path result)."""
-    from moviepy import VideoFileClip, concatenate_videoclips, AudioFileClip, vfx
+    """Assemble N AI scene clips + voiceover into a final 9:16 MP4 (30-45s).
 
-    clips = []
-    scenes = storyboard.scenes[:len(scene_videos)]
-    for p, scene in zip(scene_videos, scenes):
-        clip = VideoFileClip(str(p))
-        # trim / pad to scene duration
-        target_duration = (
-            float(settings.fal_video_duration)
-            if (provider or settings.video_provider) == "fal"
-            else min(scene.duration, settings.i2v_scene_duration)
-        )
-        if clip.duration > target_duration + 0.15:
-            clip = clip.subclipped(0, target_duration)
-        clips.append(clip)
-
-    video = concatenate_videoclips(clips, method="compose")
-    audio = AudioFileClip(str(audio_path))
-    final_dur = float(audio.duration)
-    if video.duration < final_dur:
-        video = video.with_effects([vfx.Loop(duration=final_dur)])
-    else:
-        video = video.subclipped(0, final_dur)
-    video = video.with_audio(audio.subclipped(0, final_dur)).with_duration(final_dur)
-
-    video.write_videofile(
-        str(output_path),
-        fps=settings.video_fps,
-        codec="libx264",
-        audio_codec="aac",
-        threads=4,
-        logger=None,
-        preset="ultrafast",
-        bitrate=settings.video_bitrate,
+    Delegates to video.compositor.compose_ai_scene_clips so the feathered-hero
+    composite, concat, 30-45s clamp and closed-clip cleanup live in one place.
+    """
+    return compose_ai_scene_clips(
+        scene_videos,
+        storyboard,
+        audio_path,
+        output_path,
+        provider=provider,
+        target_duration=target_duration,
     )
-    video.close()
-    audio.close()
-    for c in clips:
-        c.close()
-    return output_path
+
+
+
+
+def _condense_script(script: ScriptPackage, max_chars: int) -> str:
+    """Trim a story down to a narration chunk that fits the render window.
+
+    Keeps the emotional arc (hook -> conflict -> climax -> closing). If the
+    full script is already within the budget, return it unchanged. Long story
+    is condensed (never duplicated raw) so the video reads a coherent spine.
+    """
+    full = (script.full_script or "").strip()
+    if not full:
+        return (script.hook or "").strip()
+    if len(full) <= max_chars:
+        return full
+
+    hook = (script.hook or "").strip()
+    body = (script.body or "").strip()
+    cta = (script.cta or "").strip()
+
+    # Drop a repeated lead-in of the hook inside body (if any).
+    if hook and body.startswith(hook[:16]):
+        space = hook[:16].rfind(" ")
+        if space != -1:
+            body = body[space + 1:].strip()
+
+    budget = max_chars - len(hook) - (len(cta) if cta else 0)
+    budget = max(0, budget)
+    if budget <= 0:
+        return hook[:max_chars]
+
+    chosen = hook
+    if body:
+        chunk = body if len(body) <= budget else body[:budget].rstrip()
+        chosen = f"{chosen} {chunk}".strip()
+    if cta:
+        chosen = f"{chosen} {cta}".strip()
+    return chosen[:max_chars]
+
+
+def _normalize_audio_duration(audio_path: Path, target_dur: float, out_path: Path) -> None:
+    """Force real TTS audio to exactly *target_dur* seconds (AC3 + AV sync).
+
+    Short narration: loop the track (audio-only; never replicates a visual
+    clip). Long narration: trim to *target_dur*. Subtitle always comes from
+    this same normalized audio.
+    """
+    import math
+
+    from moviepy import AudioFileClip, concatenate_audioclips
+
+    src = AudioFileClip(str(audio_path))
+    try:
+        src_dur = float(src.duration)
+    except Exception:
+        src.close()
+        raise
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if src_dur >= target_dur - 0.05:
+        clipped = src.subclipped(0, target_dur).with_duration(target_dur)
+        clipped.write_audiofile(str(out_path))
+        clipped.close()
+        return
+
+    # Short narration: repeat until the window, then trim exactly.
+    try:
+        looped = concatenate_audioclips(
+            [src] * (int(math.ceil(target_dur / max(src_dur, 1e-6))) + 1),
+            method="compose", padding=0.0,
+        )
+    except Exception:
+        # Frame-safe fallback: leave the file untouched; video still 30-45s.
+        looped = src
+    looped = looped.with_duration(target_dur)
+    out = looped.subclipped(0, target_dur)
+    out.write_audiofile(str(out_path))
+    out.close()
 
 
 def render_product(
@@ -342,17 +360,30 @@ def render_product(
     job_id: Optional[str] = None,
     progress_callback: ProgressCb = None,
 ) -> JobResult:
-    """
-    Full pipeline for one product.
+    """Full pipeline for one product.
 
-    Generates AI I2V by default; photo-pan preview requires explicit opt-out.
+    AI video path now produces 4-6 AI clips (per storyboard scene) instead of
+    looping a single clip. CPU mode always degrades to Ken Burns preview instead
+    of raising when AI backends are unavailable (AC2).
     """
     if not product.name or not product.name.strip():
         raise ProductValidationError("Tên sản phẩm không được để trống")
 
     jid = job_id or "single"
     out_dir = job_output_dir(jid)
+    video_path = out_dir / f"video_{jid}.mp4"
 
+    # Resolve render mode: UI ProductInput field > global settings.
+    mode = str(getattr(product, "render_mode", None) or "").lower()
+    if mode not in ("cpu", "gpu"):
+        mode = "cpu"
+    render_mode = mode
+
+    # Affiliate target length must stay inside 30-45s (AC3).
+    target_dur = float(product.duration or settings.default_duration)
+    target_dur = max(30.0, min(45.0, target_dur))
+
+    # --- Validate HF_TOKEN before starting expensive work (unchanged) ---
     configured_video_providers = [settings.video_provider]
     configured_video_providers.extend(
         name.strip().lower()
@@ -366,9 +397,9 @@ def render_product(
         token_status = validate_hf_token()
         hf_token_invalid = token_status is False
         if hf_token_invalid:
-            # Preserve usable fallbacks, but fail before script/TTS work if no
-            # alternate backend is actually configured and reachable.
-            has_fal_key = bool(os.getenv("FAL_KEY", "").strip()) and not os.getenv("FAL_KEY", "").strip().lower().startswith("hf_")
+            has_fal_key = bool(os.getenv("FAL_KEY", "").strip()) and not os.getenv(
+                "FAL_KEY", ""
+            ).strip().lower().startswith("hf_")
             comfy_available = False
             if "comfyui" in configured_video_providers and settings.comfyui_enabled:
                 try:
@@ -390,60 +421,69 @@ def render_product(
     _progress(progress_callback, 0.10, "Phân tích sản phẩm & viết script...")
     analysis, script = analyze_and_script(product)
 
-    # 2. Storyboard
+    # Narration excerpt for the 30-45s render window: long story is condensed
+    # to its spine (hook -> conflict -> climax -> closing), not cut at a hard
+    # char-rate boundary, so the voiceover stays coherent.
+    narration = _condense_script(script, int(target_dur) * 12)
+
+    # 2. Storyboard 4-6 cảnh, mỗi cảnh có prompt I2V riêng.
     _progress(progress_callback, 0.30, "Tạo storyboard multi-scene...")
     storyboard = generate_storyboard(product, analysis, script)
 
     image_paths = [Path(p) for p in product.image_paths if p]
-    video_path = out_dir / f"video_{jid}.mp4"
     used_mode = "cpu"
 
-    # 4a. Generate AI video through the selected backend
+    # 3. TTS + AI video chạy song song.
     _progress(progress_callback, 0.45, "Tạo voiceover và video AI...")
     from concurrent.futures import ThreadPoolExecutor
+
     pool = ThreadPoolExecutor(max_workers=2)
-    tts_future = pool.submit(generate_tts, script.voiceover_text(), voice=product.voice, job_id=jid)
+    tts_future = pool.submit(generate_tts, narration, voice=product.voice, job_id=jid)
+
     try:
         scene_videos, used_provider, provider_failures = _generate_video_with_fallbacks(
-            storyboard, image_paths, jid, progress_callback, product,
+            storyboard,
+            image_paths,
+            jid,
+            progress_callback,
+            product,
             hf_token_invalid=hf_token_invalid,
         )
     except Exception:
         pool.shutdown(wait=True)
         raise
 
+    # TTS + audio chạy song song với AI; chuẩn hóa audio đến target_dur để
+    # subtitle + voiceover luôn khớp (tránh ghép script thu gọn với audio gốc).
+    audio_path, audio_dur = tts_future.result()
+    _normalize_audio_duration(audio_path, target_dur, out_dir / f"audio_{jid}.mp3")
+    audio_path = out_dir / f"audio_{jid}.mp3"
+    audio_dur = target_dur
+
     if scene_videos:
         used_mode = used_provider
-        audio_path, audio_dur = tts_future.result()
         pool.shutdown(wait=True)
-        _progress(progress_callback, 0.88, "Ghép các cảnh AI...")
-        if image_paths:
-            from video.compositor import compose_ai_character_video
-
-            # Every provider uses the same compositor so the uploaded product
-            # photo remains intact even if the generative model changes it.
-            compose_ai_character_video(
-                scene_videos[0],
-                audio_path,
-                video_path,
-            )
-        else:
-            _compose_from_scene_videos(scene_videos, storyboard, audio_path, video_path, provider=used_provider)
-
-    # 4b. CPU Ken Burns path
-    if not scene_videos:
-        if settings.require_ai_video:
-            pool.shutdown(wait=False, cancel_futures=True)
+        _progress(progress_callback, 0.90, "Ghép các cảnh AI + audio...")
+        # AI path always uses the multi-clip composer (no single-clip looping).
+        video_path = _compose_ai_scene_clips(
+            scene_videos,
+            storyboard,
+            audio_path,
+            video_path,
+            provider=used_provider,
+            target_duration=target_dur,
+        )
+    else:
+        # AI produced nothing -> fall back to Ken Burns instead of crashing.
+        if settings.require_ai_video_active:
             detail = " | ".join(provider_failures) or "Không có backend AI video khả dụng."
             raise VideoRenderError(
                 "Không tạo được clip AI sau khi thử các backend dự phòng. "
                 f"Chi tiết: {detail}. Để có backup tự động, cấu hình FAL_KEY (dịch vụ có thể tính phí) "
                 "hoặc bật ComfyUI; không có dịch vụ video miễn phí nào bảo đảm quota luôn sẵn có."
             )
-        audio_path, audio_dur = tts_future.result()
-        pool.shutdown(wait=True)
-        _progress(progress_callback, 0.60, "Dựng video multi-scene (Ken Burns)...")
-        compose_video(
+        _progress(progress_callback, 0.60, "Dựng video multi-scene (Ken Burns preview)...")
+        video_path = compose_video(
             storyboard,
             image_paths,
             audio_path,
@@ -451,18 +491,24 @@ def render_product(
             job_id=jid,
             product_name=product.name,
             category=product.category,
+            target_duration=target_dur,
         )
 
-    # 5. Subtitles (optional burn-in)
+    # 4. Subtitles (optional burn-in)
     final_path = video_path
     if settings.burn_subtitles:
         try:
             from video.subtitle import generate_subtitles, burn_subtitles, write_srt
 
-            _progress(progress_callback, 0.90, "Tạo & gắn phụ đề...")
+            _progress(progress_callback, 0.92, "Tạo & gắn phụ đề...")
+            # Subtitle dùng cùng audio thực tế (khớp AV sync), không ghép
+            # script gốc câu chuyện.
+            if narration != script.full_script:
+                logger.info("Narration condensed from %d to %d chars for %ds render",
+                            len(script.full_script), len(narration), target_dur)
             segs = generate_subtitles(
                 audio_path,
-                script_text=script.full_script,
+                script_text=narration,
                 duration=audio_dur,
             )
             if segs:
@@ -471,19 +517,19 @@ def render_product(
                 burned = out_dir / f"video_{jid}_sub.mp4"
                 burn_subtitles(video_path, segs, burned)
                 final_path = burned
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Subtitle step skipped: %s", e)
 
-    # 6. Background music
+    # 5. Background music
     if settings.enable_bgm:
         try:
             from video.music import mix_bgm
 
-            _progress(progress_callback, 0.95, "Mix background music...")
+            _progress(progress_callback, 0.96, "Mix background music...")
             with_bgm = out_dir / f"video_{jid}_final.mp4"
             mix_bgm(final_path, with_bgm)
             final_path = with_bgm
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("BGM step skipped: %s", e)
 
     _progress(progress_callback, 1.0, "Hoàn tất")
@@ -493,7 +539,7 @@ def render_product(
         video_path=final_path,
         caption=script.caption,
         script_text=script.full_script,
-        duration=float(audio_dur),
+        duration=final_dur,
         meta={
             "concept": analysis.concept,
             "mood": analysis.mood,
@@ -501,8 +547,13 @@ def render_product(
             "usp": analysis.usp,
             "hook": script.hook,
             "cta": script.cta,
-            "render_mode": used_mode,
+            "render_mode": render_mode,
+            "provider": used_mode,
+            "ai_clips": len(scene_videos) if scene_videos else 0,
             "image_analysis": "vision" if product.image_description else ("image_uploaded_but_vision_unavailable" if image_paths else "no_image"),
             "image_description": product.image_description,
+            "story_words": len(script.full_script.split()) if script.full_script else 0,
+            "narration_words": len(narration.split()),
+            "narration_chars": len(narration),
         },
     )
