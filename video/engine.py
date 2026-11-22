@@ -106,6 +106,7 @@ def _render_provider_scenes(
     product: ProductInput,
     n: int,
     failures: list[str],
+    require_ai_video_active: bool,
 ):
     """Generate up to n AI clips, one per storyboard scene.
 
@@ -122,7 +123,10 @@ def _render_provider_scenes(
     scenes = storyboard.scenes[:n]
     clips: list[Path] = []
     scene_failed: list[str] = []
-    required = settings.require_ai_video_active
+    # routing: UI ProductInput.render_mode drives the pipeline; global config is
+    # only a B2C default (CPU + require_ai_video=false). A "cpu" product must
+    # never crash a non-GPU machine -> always fall back to Ken Burns.
+    required = require_ai_video_active
 
     for scene in scenes:
         try:
@@ -161,6 +165,7 @@ def _generate_video_with_fallbacks(
     product: ProductInput,
     *,
     hf_token_invalid: bool = False,
+    require_ai_video_active: bool = False,
 ) -> tuple[list[Path] | None, str, list[str]]:
     """Try the primary AI backend, then the configured alternatives.
 
@@ -238,6 +243,7 @@ def _generate_video_with_fallbacks(
                 product,
                 n,
                 failures,
+                require_ai_video_active=require_ai_video_active,
             )
             if scene_videos:
                 return scene_videos, provider, failures
@@ -322,7 +328,7 @@ def _normalize_audio_duration(audio_path: Path, target_dur: float, out_path: Pat
     """
     import math
 
-    from moviepy import AudioClip, AudioFileClip, concatenate_audioclips
+    from moviepy import AudioClip, AudioFileClip
 
     src = AudioFileClip(str(audio_path))
     try:
@@ -339,28 +345,24 @@ def _normalize_audio_duration(audio_path: Path, target_dur: float, out_path: Pat
         clipped.close()
         return
 
-    # Short narration: repeat until the window, then trim exactly.
-    try:
-        looped = concatenate_audioclips(
-            [src] * (int(math.ceil(target_dur / max(src_dur, 1e-6))) + 1),
-            method="compose", padding=0.0,
-        )
-    except Exception:
-        # Frame-safe wrap: guarantee target_dur seconds of valid frames so that
-        # write_audiofile() never reads beyond the source clip (original bug:
-        # src.duration < target_dur while metadata claimed otherwise).
-        def _wrap_make_frame(t: float):
-            return src.get_frame(t % src.duration)
-
-        looped = AudioClip(
-            frame_function=_wrap_make_frame,
-            duration=target_dur,
-            fps=src.fps,
-        )
-    looped = looped.with_duration(target_dur)
-    out = looped.subclipped(0, target_dur)
-    out.write_audiofile(str(out_path))
-    out.close()
+    # Short narration: loop & trim via ffmpeg directly. Deterministic and
+    # avoids moviepy reader time-overclip / empty-frame IndexError.
+    import shutil
+    import subprocess
+    ffmpeg = shutil.which("ffmpeg") or r"C:\Users\Admin\AppData\Local\hermes\tools\ffmpeg-9.0.1-win32-x64\bin\ffmpeg"
+    ffmpeg_cmd = [
+        ffmpeg, "-y", "-hide_banner", "-loglevel", "error",
+        "-stream_loop", "-1",
+        "-i", str(audio_path),
+        "-t", f"{target_dur}",
+        "-ac", "1",
+        "-ar", str(int(src.fps)) if src.fps else "44100",
+        "-c:a", "copy",
+        str(out_path),
+    ]
+    subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True)
+    src.close()
+    return
 
 
 def render_product(
@@ -386,7 +388,10 @@ def render_product(
     mode = str(getattr(product, "render_mode", None) or "").lower()
     if mode not in ("cpu", "gpu"):
         mode = "cpu"
-    render_mode = mode
+    # UI render_mode drives the pipeline; global config is only a B2C default
+    # (CPU + require_ai_video=false). cpu → Ken Burns only (never crash);
+    # gpu → AI required (raise if AI unavailable).
+    require_ai_video_active = (mode == "gpu") or bool(settings.require_ai_video)
 
     # Affiliate target length must stay inside 30-45s (AC3).
     target_dur = float(product.duration or settings.default_duration)
@@ -457,6 +462,7 @@ def render_product(
             progress_callback,
             product,
             hf_token_invalid=hf_token_invalid,
+            require_ai_video_active=require_ai_video_active,
         )
     except Exception:
         pool.shutdown(wait=True)
@@ -484,7 +490,9 @@ def render_product(
         )
     else:
         # AI produced nothing -> fall back to Ken Burns instead of crashing.
-        if settings.require_ai_video_active:
+        # require_ai_video_active is the UI-driven routing (cpu → Ken Burns,
+        # gpu → AI required); global settings is only a B2C default.
+        if require_ai_video_active:
             detail = " | ".join(provider_failures) or "Không có backend AI video khả dụng."
             raise VideoRenderError(
                 "Không tạo được clip AI sau khi thử các backend dự phòng. "
@@ -556,7 +564,7 @@ def render_product(
             "usp": analysis.usp,
             "hook": script.hook,
             "cta": script.cta,
-            "render_mode": render_mode,
+            "render_mode": mode,
             "provider": used_mode,
             "ai_clips": len(scene_videos) if scene_videos else 0,
             "image_analysis": "vision" if product.image_description else ("image_uploaded_but_vision_unavailable" if image_paths else "no_image"),
