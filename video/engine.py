@@ -322,7 +322,7 @@ def _normalize_audio_duration(audio_path: Path, target_dur: float, out_path: Pat
     """
     import math
 
-    from moviepy import AudioFileClip, concatenate_audioclips
+    from moviepy import AudioClip, AudioFileClip, concatenate_audioclips
 
     src = AudioFileClip(str(audio_path))
     try:
@@ -346,8 +346,17 @@ def _normalize_audio_duration(audio_path: Path, target_dur: float, out_path: Pat
             method="compose", padding=0.0,
         )
     except Exception:
-        # Frame-safe fallback: leave the file untouched; video still 30-45s.
-        looped = src
+        # Frame-safe wrap: guarantee target_dur seconds of valid frames so that
+        # write_audiofile() never reads beyond the source clip (original bug:
+        # src.duration < target_dur while metadata claimed otherwise).
+        def _wrap_make_frame(t: float):
+            return src.get_frame(t % src.duration)
+
+        looped = AudioClip(
+            frame_function=_wrap_make_frame,
+            duration=target_dur,
+            fps=src.fps,
+        )
     looped = looped.with_duration(target_dur)
     out = looped.subclipped(0, target_dur)
     out.write_audiofile(str(out_path))
