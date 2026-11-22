@@ -45,3 +45,317 @@
 2026-08-06 11:36:46 | INFO    | services.product.batch | Loaded 2 products from sample_batch.xlsx
 2026-08-06 11:41:36 | WARNING | video.subtitle | ASR unavailable (faster-whisper chưa cài. pip install faster-whisper) → script-based subtitles
 2026-08-06 11:41:36 | INFO    | video.subtitle | Subtitles via script split: 3 segments
+2026-11-20 10:06:04 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 10:07:17 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 10:07:34 | WARNING | ai.story.fast_generator | Fast story generation with LLM failed (Ollama chat failed: timed out), falling back to template
+2026-11-20 10:09:49 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One: https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true
+2026-11-20 10:09:50 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:09:50 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 1 - One (71306 bytes)
+2026-11-20 10:09:51 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two: https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=tr
+2026-11-20 10:09:53 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:09:53 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 2 - Two (57076 bytes)
+2026-11-20 10:11:21 | WARNING | video.custom.generator | Custom image generation skipped (The read operation timed out)
+2026-11-20 10:11:22 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 402 Payment Required"
+2026-11-20 10:13:45 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/agent-harnesses "HTTP/1.1 200 OK"
+2026-11-20 10:13:46 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 10:13:46 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 10:14:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 10:14:05 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 10:14:06 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 10:14:11 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 503 Service Unavailable"
+2026-11-20 10:14:39 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 10:14:39 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One: https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true
+2026-11-20 10:14:40 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:14:40 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 1 - One (71306 bytes)
+2026-11-20 10:14:41 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two: https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=tr
+2026-11-20 10:14:42 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:14:42 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 2 - Two (57076 bytes)
+2026-11-20 10:16:40 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 10:16:41 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 10:16:41 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 10:16:48 | WARNING | video.custom.generator | Custom image generation skipped (The read operation timed out)
+2026-11-20 10:17:16 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 10:17:16 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One: https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true
+2026-11-20 10:17:17 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:17:17 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 1 - One (71306 bytes)
+2026-11-20 10:17:17 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two: https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=tr
+2026-11-20 10:17:18 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny?width=768&height=768&nologo=true&seed=42 "HTTP/1.1 200 OK"
+2026-11-20 10:17:18 | INFO    | video.kids_education.generator | Downloaded AI illustration for Số 2 - Two (57076 bytes)
+2026-11-20 10:19:16 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 10:19:16 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 10:20:35 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 10:20:36 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 10:20:37 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 10:32:16 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 12:16:49 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One (seed=517959)
+2026-11-20 12:16:53 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=517959 "HTTP/1.1 503 Service Unavailable"
+2026-11-20 12:16:53 | WARNING | video.kids_education.generator | AI image response 503, falling back to canvas
+2026-11-20 12:16:53 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two (seed=401912)
+2026-11-20 12:16:54 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=401912 "HTTP/1.1 402 Payment Required"
+2026-11-20 12:16:54 | WARNING | video.kids_education.generator | AI image response 402, falling back to canvas
+2026-11-20 12:16:58 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 12:17:21 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 12:17:21 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:01:44 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One (seed=441981)
+2026-11-20 13:01:48 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=441981 "HTTP/1.1 503 Service Unavailable"
+2026-11-20 13:01:48 | WARNING | video.kids_education.generator | AI image response 503, falling back to canvas
+2026-11-20 13:01:48 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two (seed=409517)
+2026-11-20 13:01:49 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=409517 "HTTP/1.1 402 Payment Required"
+2026-11-20 13:01:49 | WARNING | video.kids_education.generator | AI image response 402, falling back to canvas
+2026-11-20 13:01:52 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:02:05 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 13:02:05 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:02:05 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:02:06 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:02:15 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 13:02:15 | INFO    | video.kids_education.generator | Attempting AI image download for Số 1 - One (seed=1857)
+2026-11-20 13:02:16 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20cat%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=1857 "HTTP/1.1 402 Payment Required"
+2026-11-20 13:02:16 | WARNING | video.kids_education.generator | AI image response 402, falling back to canvas
+2026-11-20 13:02:16 | INFO    | video.kids_education.generator | Attempting AI image download for Số 2 - Two (seed=837944)
+2026-11-20 13:02:16 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/cute%20bunny%2C%20vibrant%20cartoon%2C%203d%20pixar%20disney%20style%2C%20cute%20characters%2C%20high%20quality%2C%20soft%20studio%20lighting?width=768&height=768&nologo=true&seed=837944 "HTTP/1.1 402 Payment Required"
+2026-11-20 13:02:16 | WARNING | video.kids_education.generator | AI image response 402, falling back to canvas
+2026-11-20 13:02:19 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:05:32 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:05:32 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:05:33 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:05:33 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:05:34 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:05:34 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:05:34 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:05:38 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:05:45 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 13:05:46 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:05:46 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:05:46 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:05:55 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 13:05:55 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:05:55 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:05:56 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:05:56 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:05:56 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:05:57 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:05:57 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:06:00 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:06:11 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:06:11 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:06:44 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-20 13:06:45 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:06:45 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:06:45 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:06:45 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=100 | out=audio_00.mp3
+2026-11-20 13:06:49 | WARNING | video.kids_education.generator | TTS failed for card 1 Apple - Một Quả Táo 🍎 (edge-tts failed: Edge TTS failed after 3 attempts: 403, message='Invalid response status', url='wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4&ConnectionId=e1ef3e5ef9624e68850dfd7dfba14622&Sec-MS-GEC=5B474641121E6EC0F1A39E124C6B0E8EA8FF54A50AF11835A89BFF00F1CE7947&Sec-MS-GEC-Version=1-143.0.3650.75'); proceeding with silent card
+2026-11-20 13:06:50 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:06:50 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:06:51 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:06:51 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:06:51 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=92 | out=audio_01.mp3
+2026-11-20 13:06:55 | WARNING | video.kids_education.generator | TTS failed for card 2 Apples - Hai Quả Táo 🍎🍎 (edge-tts failed: Edge TTS failed after 3 attempts: 403, message='Invalid response status', url='wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4&ConnectionId=1f3c4327fb974390b2826100c704536b&Sec-MS-GEC=5B474641121E6EC0F1A39E124C6B0E8EA8FF54A50AF11835A89BFF00F1CE7947&Sec-MS-GEC-Version=1-143.0.3650.75'); proceeding with silent card
+2026-11-20 13:06:56 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:06:56 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:06:56 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:06:56 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:06:56 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=97 | out=audio_02.mp3
+2026-11-20 13:07:01 | WARNING | video.kids_education.generator | TTS failed for card 3 Apples - Ba Quả Táo 🍎 (edge-tts failed: Edge TTS failed after 3 attempts: 403, message='Invalid response status', url='wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4&ConnectionId=015e3a684c074c4185fd1acd58130d65&Sec-MS-GEC=5B474641121E6EC0F1A39E124C6B0E8EA8FF54A50AF11835A89BFF00F1CE7947&Sec-MS-GEC-Version=1-143.0.3650.75'); proceeding with silent card
+2026-11-20 13:07:01 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:07:01 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:07:01 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:07:01 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:07:01 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=110 | out=audio_03.mp3
+2026-11-20 13:07:06 | WARNING | video.kids_education.generator | TTS failed for card 4 Apples - Bốn Quả Táo 🎉 (edge-tts failed: Edge TTS failed after 3 attempts: 403, message='Invalid response status', url='wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4&ConnectionId=de6a001d71564706bdd73e74a3e535e6&Sec-MS-GEC=5B474641121E6EC0F1A39E124C6B0E8EA8FF54A50AF11835A89BFF00F1CE7947&Sec-MS-GEC-Version=1-143.0.3650.75'); proceeding with silent card
+2026-11-20 13:07:11 | INFO    | services.history | History saved | job=7ac1f1b860 | status=completed
+2026-11-20 13:07:46 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:07:46 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:08:02 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-20 13:08:02 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:08:02 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:08:03 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:08:03 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=100 | out=audio_00.mp3
+2026-11-20 13:08:05 | INFO    | tts.edge | TTS done | duration=12.17s
+2026-11-20 13:08:05 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:08:05 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:08:06 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:08:06 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:08:06 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=92 | out=audio_01.mp3
+2026-11-20 13:08:07 | INFO    | tts.edge | TTS done | duration=11.50s
+2026-11-20 13:08:08 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:08:08 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:08:08 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:08:08 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:08:08 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=97 | out=audio_02.mp3
+2026-11-20 13:08:10 | INFO    | tts.edge | TTS done | duration=10.94s
+2026-11-20 13:08:11 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:08:11 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:08:11 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:08:11 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:08:11 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=110 | out=audio_03.mp3
+2026-11-20 13:08:14 | INFO    | tts.edge | TTS done | duration=11.90s
+2026-11-20 13:08:30 | INFO    | services.history | History saved | job=6e610c9a8b | status=completed
+2026-11-20 13:10:14 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 13:10:14 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:10:14 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:10:15 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:10:25 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 13:10:25 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:10:26 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:10:26 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:10:26 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:10:26 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:10:27 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:10:27 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:10:30 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:24:02 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:24:03 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:24:03 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:24:03 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:24:03 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:24:04 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:24:04 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:24:08 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:39:32 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:39:32 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:39:32 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:39:33 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:39:33 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:39:33 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:39:33 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:39:40 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:39:58 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 13:39:59 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:39:59 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:39:59 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:40:11 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 13:40:12 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:40:12 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:40:12 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:40:12 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:40:13 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:40:13 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:40:13 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:40:18 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 13:40:31 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:40:31 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 13:44:41 | WARNING | video.kids_education.dynamic_generator | Dynamic LLM generation failed for topic 'các con thú học đếm táo' (Ollama chat failed: timed out); using dynamic synthesizer
+2026-11-20 13:44:42 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:44:42 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:44:42 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:44:42 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=100 | out=audio_00.mp3
+2026-11-20 13:44:44 | INFO    | tts.edge | TTS done | duration=12.17s
+2026-11-20 13:44:44 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:44:44 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:44:44 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:44:44 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:44:44 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=92 | out=audio_01.mp3
+2026-11-20 13:44:45 | INFO    | tts.edge | TTS done | duration=11.50s
+2026-11-20 13:44:46 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:44:46 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:44:46 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:44:46 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:44:46 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=97 | out=audio_02.mp3
+2026-11-20 13:44:47 | INFO    | tts.edge | TTS done | duration=10.94s
+2026-11-20 13:44:47 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+apple+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:44:48 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/c/c6/Apple_cartoon_with_transparent_background.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:44:48 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Doctor_Holding_an_Apple_Cartoon.svg/960px-Doctor_Holding_an_Apple_Cartoon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:44:48 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon apple' (22006 bytes, (960, 541))
+2026-11-20 13:44:48 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=110 | out=audio_03.mp3
+2026-11-20 13:44:49 | INFO    | tts.edge | TTS done | duration=11.90s
+2026-11-20 13:45:11 | INFO    | services.history | History saved | job=7415995c23 | status=completed
+2026-11-20 13:45:59 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 13:45:59 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:45:59 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 13:46:00 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 13:46:10 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 13:46:10 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+cat+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:46:10 | INFO    | httpx | HTTP Request: GET https://upload.wikimedia.org/wikipedia/commons/5/5e/Confused_cat_consuming_cluckers_%28cartoon%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled "HTTP/1.1 403 Forbidden"
+2026-11-20 13:46:11 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png/960px-Kilkenny_Cats_cartoon_Harrisburg_Telegraph_1914-04-13.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:46:11 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon cat' (724228 bytes, (960, 1179))
+2026-11-20 13:46:11 | INFO    | httpx | HTTP Request: GET https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=cartoon+rabbit+filetype%3Abitmap%7Cdrawing&gsrnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=600&format=json&gsrlimit=4 "HTTP/1.1 200 OK"
+2026-11-20 13:46:11 | INFO    | httpx | HTTP Request: GET https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Oswald_jump.svg/960px-Oswald_jump.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail "HTTP/1.1 200 OK"
+2026-11-20 13:46:12 | INFO    | video.kids_education.generator | Found Wikimedia cartoon for 'cartoon rabbit' (45991 bytes, (960, 1232))
+2026-11-20 13:46:16 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 14:28:57 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 14:29:32 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 14:52:46 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 14:52:56 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 14:52:57 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 14:52:57 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 14:52:57 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 14:53:09 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 14:53:15 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 14:54:21 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 14:54:21 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 14:54:41 | WARNING | video.kids_education.dynamic_generator | Dynamic LLM generation failed for topic 'các con thú học đếm táo' (Ollama chat failed: timed out); using dynamic synthesizer
+2026-11-20 14:54:41 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=100 | out=audio_00.mp3
+2026-11-20 14:54:43 | INFO    | tts.edge | TTS done | duration=12.17s
+2026-11-20 14:54:43 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=92 | out=audio_01.mp3
+2026-11-20 14:54:44 | INFO    | tts.edge | TTS done | duration=11.50s
+2026-11-20 14:54:44 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=97 | out=audio_02.mp3
+2026-11-20 14:54:45 | INFO    | tts.edge | TTS done | duration=10.94s
+2026-11-20 14:54:46 | INFO    | tts.edge | TTS start | voice=en-US-AnaNeural | chars=110 | out=audio_03.mp3
+2026-11-20 14:54:46 | INFO    | tts.edge | TTS done | duration=11.90s
+2026-11-20 14:55:18 | INFO    | services.history | History saved | job=0faba6b843 | status=completed
+2026-11-20 15:04:56 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-20 15:05:34 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-20 15:17:15 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 15:17:28 | INFO    | httpx | HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+2026-11-20 15:17:29 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/dalat%20pine%20forest%20mist%20morning?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 15:17:29 | INFO    | httpx | HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2026-11-20 15:17:29 | INFO    | httpx | HTTP Request: GET https://image.pollinations.ai/prompt/xuan%20huong%20lake%20dalat%20sunrise?width=768&height=768&nologo=true "HTTP/1.1 200 OK"
+2026-11-20 15:17:38 | INFO    | ai.story.fast_generator | Ollama client unavailable; generating via Instant Template Generator
+2026-11-20 15:17:41 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-20 15:18:47 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-20 15:18:47 | INFO    | tts.edge | TTS start | voice=en-US-JennyNeural | chars=139 | out=audio_00.mp3
+2026-11-20 15:18:48 | INFO    | tts.edge | TTS done | duration=13.37s
+2026-11-20 15:18:48 | INFO    | tts.edge | TTS start | voice=en-US-JennyNeural | chars=136 | out=audio_01.mp3
+2026-11-20 15:18:51 | INFO    | tts.edge | TTS done | duration=13.58s
+2026-11-20 15:18:51 | INFO    | tts.edge | TTS start | voice=en-US-JennyNeural | chars=138 | out=audio_02.mp3
+2026-11-20 15:18:53 | INFO    | tts.edge | TTS done | duration=14.18s
+2026-11-20 15:18:53 | INFO    | tts.edge | TTS start | voice=en-US-JennyNeural | chars=138 | out=audio_03.mp3
+2026-11-20 15:18:55 | INFO    | tts.edge | TTS done | duration=13.94s
+2026-11-20 15:19:17 | INFO    | services.history | History saved | job=dc04948dfd | status=completed
+2026-11-20 15:27:27 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-20 15:33:52 | INFO    | services.history | History saved | job=test_job_12345 | status=completed
+2026-11-22 17:02:56 | INFO    | video.engine | Progress 10% | Phân tích sản phẩm & viết script...
+2026-11-22 17:02:59 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:02:59 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_q7lkfdjz\dummy_0.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_q7lkfdjz\\dummy_0.png'
+2026-11-22 17:02:59 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_q7lkfdjz\dummy_1.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_q7lkfdjz\\dummy_1.png'
+2026-11-22 17:02:59 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_q7lkfdjz\dummy_2.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_q7lkfdjz\\dummy_2.png'
+2026-11-22 17:02:59 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_q7lkfdjz\dummy_3.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_q7lkfdjz\\dummy_3.png'
+2026-11-22 17:03:48 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:03:48 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:04:57 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:04:57 | INFO    | video.engine | Progress 30% | Tạo storyboard multi-scene...
+2026-11-22 17:04:57 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:06:51 | INFO    | httpx | HTTP Request: GET https://huggingface.co/api/whoami-v2 "HTTP/1.1 200 OK"
+2026-11-22 17:06:51 | INFO    | video.engine | Progress 10% | Phân tích sản phẩm & viết script...
+2026-11-22 17:06:53 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:06:53 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\smoke_7p1jh9tv\d_0.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\smoke_7p1jh9tv\\d_0.png'
+2026-11-22 17:06:53 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\smoke_7p1jh9tv\d_1.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\smoke_7p1jh9tv\\d_1.png'
+2026-11-22 17:06:53 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\smoke_7p1jh9tv\d_2.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\smoke_7p1jh9tv\\d_2.png'
+2026-11-22 17:06:53 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\smoke_7p1jh9tv\d_3.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\smoke_7p1jh9tv\\d_3.png'
+2026-11-22 17:06:57 | WARNING | ai.storyboard.generator | LLM storyboard failed (Ollama chat failed: timed out) → fallback
+2026-11-22 17:06:57 | INFO    | video.engine | Progress 45% | Tạo voiceover và video AI...
+2026-11-22 17:06:57 | INFO    | tts.edge | TTS start | voice=vi-VN-HoaiMyNeural | chars=259 | out=tts_vi_VN_HoaiMyNeural.mp3
+2026-11-22 17:06:57 | WARNING | video.engine | Stylized keyframe unavailable; continue with original product image: Không tìm thấy ảnh sản phẩm: C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_q7lkfdjz\dummy_0.png
+2026-11-22 17:06:57 | INFO    | video.engine | Progress 45% | Đang thử AI video (4-6 cảnh): comfyui...
+2026-11-22 17:06:57 | WARNING | video.engine | Cảnh 1: name '_render_one_with_retry' is not defined
+2026-11-22 17:06:57 | WARNING | video.engine | Cảnh 2: name '_render_one_with_retry' is not defined
+2026-11-22 17:06:57 | WARNING | video.engine | Cảnh 3: name '_render_one_with_retry' is not defined
+2026-11-22 17:06:57 | WARNING | video.engine | Cảnh 4: name '_render_one_with_retry' is not defined
+2026-11-22 17:06:57 | WARNING | video.engine | Cảnh 5: name '_render_one_with_retry' is not defined
+2026-11-22 17:07:25 | INFO    | tts.edge | TTS done | duration=19.85s
+2026-11-22 17:07:29 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:07:29 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:08:22 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:08:22 | INFO    | video.engine | Progress 30% | Tạo storyboard multi-scene...
+2026-11-22 17:08:22 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:48:01 | INFO    | video.engine | Progress 10% | Phân tích sản phẩm & viết script...
+2026-11-22 17:48:03 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:48:03 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_lc4kehke\dummy_0.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_lc4kehke\\dummy_0.png'
+2026-11-22 17:48:03 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_lc4kehke\dummy_1.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_lc4kehke\\dummy_1.png'
+2026-11-22 17:48:03 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_lc4kehke\dummy_2.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_lc4kehke\\dummy_2.png'
+2026-11-22 17:48:03 | WARNING | ai.llm.client | Cannot read product image C:\Users\Admin\AppData\Local\Temp\qa_server_e2e_lc4kehke\dummy_3.png: [Errno 2] No such file or directory: 'C:\\Users\\Admin\\AppData\\Local\\Temp\\qa_server_e2e_lc4kehke\\dummy_3.png'
+2026-11-22 17:48:49 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:48:49 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-11-22 17:49:50 | INFO    | httpx | HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2026-11-22 17:49:50 | INFO    | video.engine | Progress 30% | Tạo storyboard multi-scene...
+2026-11-22 17:49:50 | INFO    | httpx | HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"

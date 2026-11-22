@@ -490,8 +490,8 @@ def render_product(
         )
     else:
         # AI produced nothing -> fall back to Ken Burns instead of crashing.
-        # require_ai_video_active is the UI-driven routing (cpu → Ken Burns,
-        # gpu → AI required); global settings is only a B2C default.
+        # require_ai_video_active is the UI-driven routing (cpu -> Ken Burns,
+        # gpu -> AI required); global settings is only a B2C default.
         if require_ai_video_active:
             detail = " | ".join(provider_failures) or "Không có backend AI video khả dụng."
             raise VideoRenderError(
@@ -499,7 +499,7 @@ def render_product(
                 f"Chi tiết: {detail}. Để có backup tự động, cấu hình FAL_KEY (dịch vụ có thể tính phí) "
                 "hoặc bật ComfyUI; không có dịch vụ video miễn phí nào bảo đảm quota luôn sẵn có."
             )
-        _progress(progress_callback, 0.60, "Dựng video multi-scene (Ken Burns preview)...")
+        _progress(progress_callback, 0.60, "Dựng video Ken Burns đa cảnh (animation)...")
         video_path = compose_video(
             storyboard,
             image_paths,
